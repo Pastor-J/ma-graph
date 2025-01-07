@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Handle, Position } from '@xyflow/react';
  
-function ComponentNode({ data }) {
+function ComponentNode() {
   const onKeyDown = useCallback((evt) => {
     if (evt.key === 'Enter') {
       console.log('Pressed Enter');
