@@ -19,7 +19,6 @@ function ComponentNode() {
           onKeyDown={onKeyDown} className="nodrag" 
         />
       </div>
-      <Handle type="source" position={Position.Right} />
     </>
   );
 } 

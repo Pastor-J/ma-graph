@@ -1,27 +1,36 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { 
   ReactFlow, 
   ReactFlowProvider,
-  useReactFlow,
-  Controls,
   useNodesState, 
   useEdgesState, 
   addEdge,
-  MiniMap,
-  Background,
   Panel,
  } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import ComponentNode from './components/ComponentNode';
 
-const nodeTypes = { componentNode: ComponentNode};
+import '@xyflow/react/dist/style.css';
+
+import ComponentNode from './components/ComponentNode';
+import SystemNode from './components/SystemNode';
+import AssemblyNode from './components/AssemblyNode';
+
+const nodeTypes = { 
+  componentNode: ComponentNode, 
+  systemNode: SystemNode,
+  assemblyNode: AssemblyNode
+};
 
 const initialNodes = [
-  { id: '1', type: 'componentNode', position: {x: 150, y: 250}, data: { label: 'node1', function: 'Example Function 1'} },
-  { id: '2', type: 'componentNode', position: {x: 400, y: 250}, data: { label: 'node2', function: 'Example Function 2'} },
+  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1', function: 'Example Function 1'} },
+  { id: '2', type: 'assemblyNode', position: {x: 400, y: 250}, data: { label: 'node2', function: 'Example Function 2'} },
+  { id: '3', type: 'componentNode', position: {x: 650, y: 250},
+  data: {label: 'node3', function: 'Example Function 3'} }
 ];
 
-const initialEdges = [{ id: 'e1-2', source: '1', target: '2'}];
+const initialEdges = [
+  { id: 'e1-2', source: '1', target: '2'},
+  { id: 'e2-3', source: '2', target: '3'}
+];
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -54,26 +63,23 @@ function App() {
   }, [rfInstance]);
 
   return (
-      <ReactFlow 
-        nodes={nodes} 
-        edges={edges} 
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onInit={setRfInstance}
-        nodeTypes={nodeTypes}
-        onConnect={onConnect}
-      >
-        <Panel position='top-right'>
-          <button onClick={onAnalyze}>Analyze</button>
-        </Panel>
-      </ReactFlow>
+    <div style={{ width: '100vw', height: '100vh'}}>      <ReactFlowProvider>
+        <ReactFlow 
+          nodes={nodes} 
+          edges={edges} 
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onInit={setRfInstance}
+          nodeTypes={nodeTypes}
+          onConnect={onConnect}
+        >
+          <Panel position='top-right'>
+            <button onClick={onAnalyze}>Analyze</button>
+          </Panel>
+        </ReactFlow>
+      </ReactFlowProvider>
+    </div>
   );
 };
 
-export default () => (
-  <div style={{ width: '100vw', height: '100vh'}}>
-    <ReactFlowProvider>
-      <App />
-    </ReactFlowProvider>
-  </div>
-);
+export default App;
