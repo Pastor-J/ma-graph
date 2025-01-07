@@ -12,7 +12,7 @@ import {
   Panel,
  } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import ComponentNode from './ComponentNode';
+import ComponentNode from './components/ComponentNode';
 
 const nodeTypes = { componentNode: ComponentNode};
 
