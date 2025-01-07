@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 import { 
   ReactFlow, 
-  ReactFlowProvider,
   useNodesState, 
   useEdgesState, 
   addEdge,
   Panel,
+  useReactFlow,
+  ReactFlowProvider
  } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -32,10 +33,14 @@ const initialEdges = [
   { id: 'e2-3', source: '2', target: '3'}
 ];
 
+let id = 4;
+const getId = () => `${id++}`
+
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState(null);
+  const { screenToFlowPosition } = useReactFlow(); 
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => {
@@ -62,8 +67,44 @@ function App() {
     }
   }, [rfInstance]);
 
+  const onConnectEnd = useCallback(
+    (event, connectionState) => {
+      if (!connectionState.isValid) {
+        const id = getId();
+        const type = connectionState.fromNode.type;
+        const { clientX, clientY} = 
+          'changedTouches' in event ? event.changedTouches[0] : event;
+        let newType = '';
+
+        if (type == 'systemNode') {
+          newType = 'assemblyNode';
+        } else if (type == 'assemblyNode') {
+          newType = 'componentNode';
+        };
+
+        const newNode = {
+          id: id,
+          type: newType,
+          position: screenToFlowPosition({
+            x: clientX,
+            y: clientY
+          }),
+          data: {label: `node${id}`}
+        }
+        
+        setNodes((nds) => {
+          return nds.concat(newNode);
+        })
+        
+        setEdges((eds) => {
+          return eds.concat({ id, source: connectionState.fromNode.id, target: id}); 
+       })
+      }
+    }
+  );
+
   return (
-    <div style={{ width: '100vw', height: '100vh'}}>      <ReactFlowProvider>
+    <div style={{ width: '100vw', height: '100vh'}}>      
         <ReactFlow 
           nodes={nodes} 
           edges={edges} 
@@ -72,14 +113,22 @@ function App() {
           onInit={setRfInstance}
           nodeTypes={nodeTypes}
           onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
         >
           <Panel position='top-right'>
             <button onClick={onAnalyze}>Analyze</button>
           </Panel>
         </ReactFlow>
-      </ReactFlowProvider>
     </div>
   );
 };
 
-export default App;
+function FlowWithProvider() {
+  return (
+    <ReactFlowProvider>
+      <App />
+    </ReactFlowProvider>
+  );
+}
+
+export default FlowWithProvider;
