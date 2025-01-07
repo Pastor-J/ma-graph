@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import './ComponentNode.css'
  
 function ComponentNode() {
   const onKeyDown = useCallback((evt) => {
@@ -11,7 +12,7 @@ function ComponentNode() {
   return (
     <>
       <Handle type="target" position={Position.Left} />
-      <div>
+      <div className="component-node-container">
         <label htmlFor="text"></label>
         <input 
           id="text" 
