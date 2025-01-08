@@ -1,16 +1,32 @@
-import { Handle, Position} from '@xyflow/react'
-import './SystemNode.css'
+import { Handle, Position } from '@xyflow/react';
+import './SystemNode.css';
+import { useState, useCallback} from 'react';
 
-function SystemNode() {
+function SystemNode({ data }) {
+  const [system, setSystem] = useState('');
+
+  const onSystemChange = useCallback((evt) => {
+    setSystem(evt.target.value);
+  }, [])
+
+  const onSystemKeyDown = useCallback((evt) => {
+    if (evt.key === 'Enter') {
+      data.system = system;
+    }
+  }, [system, data])
 
   return (
     <>
       <Handle type="source" position={Position.Right} />
       <div className="system-node-container">
         <label htmlFor='text'></label> 
-        <input 
-          id="text">
-        </input>
+        <input
+          className='system-input-field'
+          placeholder='System Component'
+          onChange={onSystemChange}
+          value={system}
+          onKeyDown={onSystemKeyDown}
+        />
 
       </div>
     </>

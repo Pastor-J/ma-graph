@@ -22,7 +22,7 @@ const nodeTypes = {
 };
 
 const initialNodes = [
-  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1', function: 'Example Function 1'} }
+  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1' } }
 ];
 
 const initialEdges = [

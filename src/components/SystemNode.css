@@ -1,4 +1,10 @@
 .system-node-container {
   border: 2px solid grey;
+  border-radius: 10px;
   padding: 10px;
+}
+
+.system-input-field {
+  padding: 10px;
+  margin: 5px;
 }
