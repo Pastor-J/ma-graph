@@ -1,4 +1,12 @@
 .component-node-container {
-  border: 2px solid blue;
-  padding: 10px
+  border: 2px solid rgb(15, 131, 154);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fault-input-field {
+  padding: 10px;
+  margin: 5px;
 }

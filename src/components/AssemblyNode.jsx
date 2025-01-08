@@ -5,7 +5,6 @@ import { useCallback, useState } from 'react';
 function AssemblyNode({ data }) {
   const [identifier, setIdentifier] = useState('');
   const [func, setFunc] = useState('');
-  const [fault, setFault] = useState('');
 
   const onIdentifierChange = useCallback((evt) => {
     setIdentifier(evt.target.value);
@@ -29,16 +28,6 @@ function AssemblyNode({ data }) {
     }
   }, [func, data])
 
-  const onFaultChange = useCallback((evt) => {
-    setFault(evt.target.value);
-  }, [])
-
-  const onFaultKeyDown = useCallback((evt) => {
-    if (evt.key === 'Enter') {
-      data.fault = fault;
-    }
-  }, [fault, data])
-
   return (
     <>
       <Handle type="target" position={Position.Left}></Handle>
@@ -58,15 +47,6 @@ function AssemblyNode({ data }) {
           value={func}
           onChange={onFuncChange}
           placeholder='Function'
-        />
-
-        <input 
-          className="fault-input-field"
-          onKeyDown={onFaultKeyDown}
-          value={fault}
-          onChange={onFaultChange}
-          placeholder='Possible Fault'
-
         />
 
       </div>
