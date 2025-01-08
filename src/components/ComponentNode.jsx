@@ -67,6 +67,12 @@ function ComponentNode({ data }) {
           onChange={onFaultChange}
           placeholder='Possible Fault'
         />
+
+        <label className="file-upload-label">Specifications</label>
+        <input 
+          className='file-upload-field'
+          type='file'
+        />
       </div>
     </>
   );

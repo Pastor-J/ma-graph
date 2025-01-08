@@ -10,3 +10,15 @@
   padding: 10px;
   margin: 5px;
 }
+
+.file-upload-field {
+  padding-left: 5px;
+  margin: 5px;
+  
+  background-color: none;
+}
+
+.file-upload-label {
+  padding-left: 10px;
+  padding-top: 5px;
+}
