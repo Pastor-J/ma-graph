@@ -51,6 +51,7 @@ function App() {
       const flow = rfInstance.toObject();
 
       try {
+        //TODO: Async Await
         fetch('http://127.0.0.1:5000/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
