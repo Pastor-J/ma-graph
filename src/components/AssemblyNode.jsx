@@ -8,7 +8,8 @@ function AssemblyNode({ data }) {
 
   const onIdentifierChange = useCallback((evt) => {
     setIdentifier(evt.target.value);
-  }, [])
+    data.identifier = evt.target.value;
+  }, [data])
 
   const onIdentifierKeyDown = useCallback((evt) => {
     if (evt.key === 'Enter') {
@@ -19,7 +20,8 @@ function AssemblyNode({ data }) {
 
   const onFuncChange = useCallback((evt) => {
     setFunc(evt.target.value);
-  }, [])
+    data.func = evt.target.value;
+  }, [data])
 
   const onFuncKeyDown = useCallback((evt) => {
     if (evt.key === 'Enter') {

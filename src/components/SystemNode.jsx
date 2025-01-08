@@ -7,11 +7,12 @@ function SystemNode({ data }) {
 
   const onSystemChange = useCallback((evt) => {
     setSystem(evt.target.value);
-  }, [])
+    data.identifier = evt.target.value;
+  }, [data])
 
   const onSystemKeyDown = useCallback((evt) => {
     if (evt.key === 'Enter') {
-      data.system = system;
+      data.identifer = system;
     }
   }, [system, data])
 
