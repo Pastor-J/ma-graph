@@ -1,15 +1,74 @@
 import { Handle, Position } from '@xyflow/react'
 import './AssemblyNode.css'
+import { useCallback, useState } from 'react';
 
-function AssemblyNode() {
+function AssemblyNode({ data }) {
+  const [identifier, setIdentifier] = useState('');
+  const [func, setFunc] = useState('');
+  const [fault, setFault] = useState('');
+
+  const onIdentifierChange = useCallback((evt) => {
+    setIdentifier(evt.target.value);
+  }, [])
+
+  const onIdentifierKeyDown = useCallback((evt) => {
+    if (evt.key === 'Enter') {
+      data.identifier = identifier;
+      console.log(data);
+    }
+  }, [identifier, data])
+
+  const onFuncChange = useCallback((evt) => {
+    setFunc(evt.target.value);
+  }, [])
+
+  const onFuncKeyDown = useCallback((evt) => {
+    if (evt.key === 'Enter') {
+      data.func = func;
+      console.log(data)
+    }
+  }, [func, data])
+
+  const onFaultChange = useCallback((evt) => {
+    setFault(evt.target.value);
+  }, [])
+
+  const onFaultKeyDown = useCallback((evt) => {
+    if (evt.key === 'Enter') {
+      data.fault = fault;
+    }
+  }, [fault, data])
+
   return (
     <>
       <Handle type="target" position={Position.Left}></Handle>
       <div className="assembly-node-container">
         <label htmlFor='text'></label>
         <input
-          id='text'
+          className="identifier-input-field"
+          onKeyDown={onIdentifierKeyDown}
+          value={identifier}
+          onChange={onIdentifierChange}
+          placeholder='Assembly Component'
         />
+
+        <input 
+          className="function-input-field"
+          onKeyDown={onFuncKeyDown}
+          value={func}
+          onChange={onFuncChange}
+          placeholder='Function'
+        />
+
+        <input 
+          className="fault-input-field"
+          onKeyDown={onFaultKeyDown}
+          value={fault}
+          onChange={onFaultChange}
+          placeholder='Possible Fault'
+
+        />
+
       </div>
       <Handle type="source" position={Position.Right}></Handle>
     </>

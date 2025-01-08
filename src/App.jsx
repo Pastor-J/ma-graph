@@ -22,10 +22,7 @@ const nodeTypes = {
 };
 
 const initialNodes = [
-  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1', function: 'Example Function 1'} },
-  { id: '2', type: 'assemblyNode', position: {x: 400, y: 250}, data: { label: 'node2', function: 'Example Function 2'} },
-  { id: '3', type: 'componentNode', position: {x: 650, y: 250},
-  data: {label: 'node3', function: 'Example Function 3'} }
+  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1', function: 'Example Function 1'} }
 ];
 
 const initialEdges = [
@@ -33,7 +30,7 @@ const initialEdges = [
   { id: 'e2-3', source: '2', target: '3'}
 ];
 
-let id = 4;
+let id = Number(initialNodes.length) + 1;
 const getId = () => `${id++}`
 
 function App() {

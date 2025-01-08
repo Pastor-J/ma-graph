@@ -1,4 +1,22 @@
 .assembly-node-container {
   border: 2px solid green;
   padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.identifier-input-field {
+  padding: 10px;
+  margin: 5px;
+}
+
+.function-input-field {
+  padding: 10px;
+  margin: 5px;
+}
+
+.fault-input-field {
+  padding: 10px;
+  margin: 5px;
 }
