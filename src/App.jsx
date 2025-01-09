@@ -63,7 +63,7 @@ function App() {
       }
 
     }
-  }, [rfInstance]);
+  }, [rfInstance]); // useCallback caches functions and only updates it if elems in dependency array change
 
   const onConnectEnd = useCallback(
     (event, connectionState) => {
