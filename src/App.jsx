@@ -35,6 +35,7 @@ function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState(null);
   const { screenToFlowPosition } = useReactFlow(); 
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
 
   let id = Number(nodes.length) + 1;
   const getId = () => `${id++}`
@@ -124,6 +125,11 @@ function App() {
     }
   );
 
+  const onNodeClick = (event, node) => {
+    setSelectedNodeId(node.id);
+    console.log(selectedNodeId);
+  }
+
   return (
     <div style={{ width: '100vw', height: '100vh'}}>      
         <ReactFlow 
@@ -131,6 +137,7 @@ function App() {
           edges={edges} 
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={onNodeClick}
           onInit={setRfInstance}
           nodeTypes={nodeTypes}
           onConnect={onConnect}
