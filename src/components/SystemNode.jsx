@@ -3,18 +3,18 @@ import './SystemNode.css';
 import { useState, useCallback} from 'react';
 
 function SystemNode({ data }) {
-  const [system, setSystem] = useState('');
+  const [identifier, setIdentifier] = useState(data.identifier || '');
 
   const onSystemChange = useCallback((evt) => {
-    setSystem(evt.target.value);
+    setIdentifier(evt.target.value);
     data.identifier = evt.target.value;
   }, [data])
 
-  const onSystemKeyDown = useCallback((evt) => {
-    if (evt.key === 'Enter') {
-      data.identifer = system;
-    }
-  }, [system, data])
+  // const onSystemKeyDown = useCallback((evt) => {
+  //   if (evt.key === 'Enter') {
+  //     data.identifer = system;
+  //   }
+  // }, [system, data])
 
   return (
     <>
@@ -25,8 +25,8 @@ function SystemNode({ data }) {
           className='system-input-field'
           placeholder='System Component'
           onChange={onSystemChange}
-          value={system}
-          onKeyDown={onSystemKeyDown}
+          value={identifier}
+          // onKeyDown={onSystemKeyDown}
         />
 
       </div>

@@ -3,32 +3,32 @@ import './AssemblyNode.css'
 import { useCallback, useState } from 'react';
 
 function AssemblyNode({ data }) {
-  const [identifier, setIdentifier] = useState('');
-  const [func, setFunc] = useState('');
+  const [identifier, setIdentifier] = useState(data.identifier || '');
+  const [func, setFunc] = useState(data.func || '');
 
   const onIdentifierChange = useCallback((evt) => {
     setIdentifier(evt.target.value);
     data.identifier = evt.target.value;
   }, [data])
 
-  const onIdentifierKeyDown = useCallback((evt) => {
-    if (evt.key === 'Enter') {
-      data.identifier = identifier;
-      console.log(data);
-    }
-  }, [identifier, data])
+  // const onIdentifierKeyDown = useCallback((evt) => {
+  //   if (evt.key === 'Enter') {
+  //     data.identifier = identifier;
+  //     console.log(data);
+  //   }
+  // }, [identifier, data])
 
   const onFuncChange = useCallback((evt) => {
     setFunc(evt.target.value);
     data.func = evt.target.value;
   }, [data])
 
-  const onFuncKeyDown = useCallback((evt) => {
-    if (evt.key === 'Enter') {
-      data.func = func;
-      console.log(data)
-    }
-  }, [func, data])
+  // const onFuncKeyDown = useCallback((evt) => {
+  //   if (evt.key === 'Enter') {
+  //     data.func = func;
+  //     console.log(data)
+  //   }
+  // }, [func, data])
 
   return (
     <>
@@ -37,7 +37,7 @@ function AssemblyNode({ data }) {
         <label htmlFor='text'></label>
         <input
           className="identifier-input-field"
-          onKeyDown={onIdentifierKeyDown}
+          // onKeyDown={onIdentifierKeyDown}
           value={identifier}
           onChange={onIdentifierChange}
           placeholder='Assembly Component'
@@ -45,7 +45,7 @@ function AssemblyNode({ data }) {
 
         <input 
           className="function-input-field"
-          onKeyDown={onFuncKeyDown}
+          // onKeyDown={onFuncKeyDown}
           value={func}
           onChange={onFuncChange}
           placeholder='Function'

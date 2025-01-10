@@ -30,14 +30,15 @@ const initialEdges = [
   { id: 'e2-3', source: '2', target: '3'}
 ];
 
-let id = Number(initialNodes.length) + 1;
-const getId = () => `${id++}`
-
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState(null);
   const { screenToFlowPosition } = useReactFlow(); 
+
+  let id = Number(nodes.length) + 1;
+  const getId = () => `${id++}`
+
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => {
@@ -45,6 +46,28 @@ function App() {
       return addEdge(params, eds);
     }), [setEdges],
   )
+
+  const onSave = useCallback(() => {
+    if (rfInstance) {
+      const flow = rfInstance.toObject();
+      localStorage.setItem('flow', JSON.stringify(flow));
+    }
+  }, [rfInstance])
+
+  const onRestore = useCallback(() => {
+    const restoreFlow = () => {
+      const flow = JSON.parse(localStorage.getItem('flow'));
+ 
+      if (flow) {
+        // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
+        setNodes(flow.nodes || []);
+        setEdges(flow.edges || []);
+        // setViewport({ x, y, zoom });
+      }
+    };
+ 
+    restoreFlow();   
+  }, [setNodes, setEdges]);
 
   const onAnalyze = useCallback(() => {
     if (rfInstance) {
@@ -115,6 +138,8 @@ function App() {
         >
           <Panel position='top-right'>
             <button onClick={onAnalyze}>Analyze</button>
+            <button onClick={onSave}>Save</button>
+            <button onClick={onRestore}>Restore</button>
           </Panel>
         </ReactFlow>
     </div>
