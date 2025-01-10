@@ -1,15 +1,11 @@
 import time
+from langchain_ollama import OllamaLLM
+import json
+
+llm = OllamaLLM(model="llama3.1:8b")
 
 def analyze_result(flow_data):
-  nodes = flow_data['nodes']
-  edges = flow_data['edges']
-
-  print("Before sleep")
-  time.sleep(20)  # Pauses execution for 5 seconds
-  print("After sleep")
-
-  # for edge in edges:
-  #   print(edge)
-
-  for node in nodes:
-    print(node['data'])
+  flow_data = json.dumps(flow_data)
+  prompt = flow_data + "Please analyse this graph. Answer in one sentence."
+  response = llm.invoke(prompt)
+  print(response)

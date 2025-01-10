@@ -5,7 +5,6 @@ from analysis import analyze_result
 app = Flask(__name__)
 CORS(app)
 
-
 @app.route('/api/analyze', methods=['POST'])
 def analyze_flow():
     # Get graph data
