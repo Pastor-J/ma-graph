@@ -11,6 +11,8 @@ import {
 
 import '@xyflow/react/dist/style.css';
 
+import './App.css'
+
 import ComponentNode from './components/ComponentNode';
 import SystemNode from './components/SystemNode';
 import AssemblyNode from './components/AssemblyNode';
@@ -180,9 +182,9 @@ function App() {
           onConnectEnd={onConnectEnd}
         >
           <Panel position='top-right'>
-            <button onClick={onAnalyze}>Analyze</button>
-            <button onClick={onSave}>Save</button>
-            <button onClick={onRestore}>Restore</button>
+            <button className='panel-button' onClick={onAnalyze}>Analyze</button>
+            <button className='panel-button' onClick={onSave}>Save</button>
+            <button className='panel-button' onClick={onRestore}>Restore</button>
           </Panel>
         </ReactFlow>
     </div>
