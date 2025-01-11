@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from analysis import analyze_result
+from analysis import simple_analysis
 
 app = Flask(__name__)
 CORS(app)
@@ -11,7 +11,7 @@ def analyze_flow():
     flow_data = request.get_json()
 
     # Analyze the flow data
-    analyze_result(flow_data)
+    simple_analysis(flow_data)
 
     # Store flow data into dictionary
     result = {"message": "Analysis complete", "data": flow_data}
