@@ -23,10 +23,9 @@ def simple_analysis(flow_data):
 
 
   query = f"""
-    You are a AI-Assitant for Failure Mode and Effects Analysis. Please analyse this graph with nodes: {extracted_nodes_info} and edges: {edges}. Return a possible fault for node with id {seedId}. Keep it as short as possible. Your ouput string should be maximum 5 words long.
+    You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Please analyse this graph with nodes: {extracted_nodes_info} and edges: {edges}. The graph has three hierarchie levels indicated by the 'type' attribute with 'systemNode' being the least detailed, 'assemblyNode' being more detailed and 'componentNode' being most detailed. Return a possible fault for node with id {seedId}. Keep it as short as possible. Your ouput string should be maximum 5 words long.
   """
   # TODO: Use Reasoning of LLM to fine tune the query
-  print(query)
 
   # for chunk in llm.stream(query):
   #   print(chunk, end="", flush=True)
