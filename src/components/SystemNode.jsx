@@ -4,6 +4,7 @@ import { useState, useCallback} from 'react';
 
 function SystemNode({ data }) {
   const [identifier, setIdentifier] = useState(data.identifier || '');
+  console.log(data);
 
   const onSystemChange = useCallback((evt) => {
     setIdentifier(evt.target.value);

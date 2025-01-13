@@ -26,12 +26,11 @@ const nodeTypes = {
 };
 
 const initialNodes = [
-  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1' } }
+  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1', identifier: 'Cooling System' } } // Fix this
 ];
 
 const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2'},
-  { id: 'e2-3', source: '2', target: '3'}
+  { id: 'e1-2', source: '1', target: '2'}
 ];
 
 function App() {
@@ -71,9 +70,13 @@ function App() {
     };
   }, []);
 
+  // Load form localStorage on startup
+  useEffect(() => {
+    onRestore();
+  }, [])
+
   let id = Number(nodes.length) + 1;
   const getId = () => `${id++}`
-
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => {
@@ -126,12 +129,20 @@ function App() {
   const onAnalyze = useCallback(() => {
     if (rfInstance && socket && socket.readyState === WebSocket.OPEN) {
       const flow = rfInstance.toObject(); // Convert flow data to an object
-      socket.send(JSON.stringify(flow)); // Send flow data as JSON
+      const seedId = selectedNodeId;
+      const payload = {
+        seedId,
+        flow
+      }
+
+      // Why is this displayed even if the callback is not triggered?
+      console.log(seedId); 
+      socket.send(JSON.stringify(payload)); // Send flow data as JSON
       console.log('Flow data sent via WebSocket');
     } else {
       console.error('WebSocket is not connected');
     }
-  }, [rfInstance, socket]);
+  }, [rfInstance, socket, selectedNodeId]);
 
   const onConnectEnd = useCallback(
     (event, connectionState) => {
@@ -171,7 +182,6 @@ function App() {
 
   const onNodeClick = (event, node) => {
     setSelectedNodeId(node.id);
-    console.log(selectedNodeId);
   }
 
   return (

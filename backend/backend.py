@@ -46,3 +46,5 @@ start_server = websockets.serve(analyze, "127.0.0.1", 5000)
 print("WebSocket server is running on ws://127.0.0.1:5000")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
+
+# TODO: Highlight currently selected node and cell and use this as starting point for analysis
