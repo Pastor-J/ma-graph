@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { 
   ReactFlow, 
   useNodesState, 
@@ -11,9 +11,13 @@ import {
 
 import '@xyflow/react/dist/style.css';
 
+import './App.css'
+
 import ComponentNode from './components/ComponentNode';
 import SystemNode from './components/SystemNode';
 import AssemblyNode from './components/AssemblyNode';
+
+const SOCKET_URL = 'ws://127.0.0.1:5000';
 
 const nodeTypes = { 
   componentNode: ComponentNode, 
@@ -35,6 +39,37 @@ function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState(null);
   const { screenToFlowPosition } = useReactFlow(); 
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const ws = new WebSocket(SOCKET_URL);
+
+    ws.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+
+    ws.onmessage = (event) => {
+      console.log('Message from server:', event.data);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    setSocket(ws);
+
+    // Cleanup on unmount
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, []);
+
 
   let id = Number(nodes.length) + 1;
   const getId = () => `${id++}`
@@ -69,24 +104,34 @@ function App() {
     restoreFlow();   
   }, [setNodes, setEdges]);
 
+  // const onAnalyze = useCallback(() => {
+  //   if (rfInstance) {
+  //     const flow = rfInstance.toObject();
+
+  //     try {
+  //       //TODO: Async Await
+  //       fetch('http://127.0.0.1:5000/api/analyze', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify(flow),
+  //       });
+  //       console.log('data send');
+  //     } catch(error) {
+  //       console.log(`Unexpected Error: ${error}`);
+  //     }
+
+  //   }
+  // }, [rfInstance]); // useCallback caches functions and only updates it if elems in dependency array change
+
   const onAnalyze = useCallback(() => {
-    if (rfInstance) {
-      const flow = rfInstance.toObject();
-
-      try {
-        //TODO: Async Await
-        fetch('http://127.0.0.1:5000/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(flow),
-        });
-        console.log('data send');
-      } catch(error) {
-        console.log(`Unexpected Error: ${error}`);
-      }
-
+    if (rfInstance && socket && socket.readyState === WebSocket.OPEN) {
+      const flow = rfInstance.toObject(); // Convert flow data to an object
+      socket.send(JSON.stringify(flow)); // Send flow data as JSON
+      console.log('Flow data sent via WebSocket');
+    } else {
+      console.error('WebSocket is not connected');
     }
-  }, [rfInstance]); // useCallback caches functions and only updates it if elems in dependency array change
+  }, [rfInstance, socket]);
 
   const onConnectEnd = useCallback(
     (event, connectionState) => {
@@ -137,9 +182,9 @@ function App() {
           onConnectEnd={onConnectEnd}
         >
           <Panel position='top-right'>
-            <button onClick={onAnalyze}>Analyze</button>
-            <button onClick={onSave}>Save</button>
-            <button onClick={onRestore}>Restore</button>
+            <button className='panel-button' onClick={onAnalyze}>Analyze</button>
+            <button className='panel-button' onClick={onSave}>Save</button>
+            <button className='panel-button' onClick={onRestore}>Restore</button>
           </Panel>
         </ReactFlow>
     </div>
