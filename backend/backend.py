@@ -32,13 +32,10 @@ async def analyze(websocket, path):
         flow_data = json.loads(message)
         # print("Received flow data:", flow_data)
 
-        result1 = simple_analysis(flow_data=flow_data)
-        print(result1)
-        # Perform analysis (placeholder logic)
-        result = {"node_id": 4, "fault": "Connection issue"}
+        result = simple_analysis(flow_data=flow_data)
 
         # Send analysis result back to the client
-        await websocket.send(result1)
+        await websocket.send(result)
 
 # Start the WebSocket server
 start_server = websockets.serve(analyze, "127.0.0.1", 5000)

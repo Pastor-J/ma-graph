@@ -30,7 +30,7 @@ const initialNodes = [
 ];
 
 const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2'}
+  { id: '1', source: '1', target: '2'}
 ];
 
 function App() {
@@ -135,8 +135,6 @@ function App() {
         flow
       }
 
-      // Why is this displayed even if the callback is not triggered?
-      console.log(seedId); 
       socket.send(JSON.stringify(payload)); // Send flow data as JSON
       console.log('Flow data sent via WebSocket');
     } else {
