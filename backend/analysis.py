@@ -6,6 +6,10 @@ llm = OllamaLLM(model="llama3.1:8b")
 
 def simple_analysis(flow_data):
   seedId = flow_data["seedId"]
+
+  if not seedId:
+    return "Please select a node for analysis."
+  
   flow = flow_data["flow"]
   nodes = flow["nodes"]
   edges = flow["edges"]
