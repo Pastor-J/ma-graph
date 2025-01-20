@@ -41,6 +41,7 @@ function App() {
   const { screenToFlowPosition } = useReactFlow(); 
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [response, setResponse] = useState('');
 
   useEffect(() => {
     const ws = new WebSocket(SOCKET_URL);
@@ -51,6 +52,7 @@ function App() {
 
     ws.onmessage = (event) => {
       console.log('Message from server:', event.data);
+      setResponse(event.data);
     };
 
     ws.onerror = (error) => {
@@ -202,7 +204,7 @@ function App() {
             <button className='panel-button' onClick={onRestore}>Restore</button>
           </Panel>
         </ReactFlow>
-        <Chatbox />
+        <Chatbox response={ response }/>
     </div>
   );
 };

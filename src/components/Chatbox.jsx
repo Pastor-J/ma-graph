@@ -1,9 +1,9 @@
 import './Chatbox.css'
 
-function Chatbox() {
+function Chatbox({ response }) {
   return (
     <div className = 'chatbox-container'>
-      Chatbox
+      { response ? response : 'Reasoning' }
     </div>
   );
 };
