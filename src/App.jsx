@@ -16,6 +16,7 @@ import './App.css'
 import ComponentNode from './components/ComponentNode';
 import SystemNode from './components/SystemNode';
 import AssemblyNode from './components/AssemblyNode';
+import Chatbox from './components/Chatbox';
 
 const SOCKET_URL = 'ws://127.0.0.1:5000';
 
@@ -201,6 +202,7 @@ function App() {
             <button className='panel-button' onClick={onRestore}>Restore</button>
           </Panel>
         </ReactFlow>
+        <Chatbox />
     </div>
   );
 };
