@@ -2,7 +2,7 @@ import time
 from langchain_ollama import OllamaLLM
 import json
 
-llm = OllamaLLM(model="llama3.1:8b")
+llm = OllamaLLM(model="deepseek-r1:1.5b")
 predicted = []
 
 def simple_analysis(flow_data):
@@ -41,3 +41,8 @@ def simple_analysis(flow_data):
   predicted.append(result)
 
   return result
+
+
+def zero_cot_prompt_analysis(): 
+  # Just add: think step by step
+  pass

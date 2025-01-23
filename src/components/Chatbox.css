@@ -7,5 +7,7 @@
   border: 1px solid;
   border-radius: 5px;
   max-width: 200px;
-  max-height: 600px;
+  max-height: 400px;
+  overflow: auto; 
+  text-align: left;
 }

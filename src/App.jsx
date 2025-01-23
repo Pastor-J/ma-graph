@@ -53,6 +53,7 @@ function App() {
     ws.onmessage = (event) => {
       console.log('Message from server:', event.data);
       setResponse(event.data);
+      console.log(event);
     };
 
     ws.onerror = (error) => {
