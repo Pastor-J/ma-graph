@@ -53,7 +53,11 @@ function App() {
     ws.onmessage = (event) => {
       console.log('Message from server:', event.data);
       setResponse(event.data);
-      console.log(event);
+      const responseObject = JSON.parse(event.data);
+      const reasoning = responseObject.reasoning;
+      const possibleFault = responseObject.possibleFault;
+      const possibleConsequences = responseObject.possibleConsequences;
+      console.log(possibleConsequences);
     };
 
     ws.onerror = (error) => {
