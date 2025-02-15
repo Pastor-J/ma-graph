@@ -3,7 +3,7 @@ import './Chatbox.css'
 function Chatbox({ response }) {
   return (
     <div className = 'chatbox-container'>
-      { response ? response : 'Reasoning' }
+      { response ? response.reasoning : 'Reasoning' }
     </div>
   );
 };

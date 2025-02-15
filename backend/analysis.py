@@ -10,10 +10,10 @@ if os.path.exists('./data'):
 else:
   df = pd.DataFrame(
     {
-      "node_id": [],
-      "possible_fault": [],
+      "nodeID": [],
+      "possibleFault": [],
       # "possible_cause": [],
-      "possible_consequence": [],
+      "possibleConsequences": [],
       "reasoning": []
     }
   )
@@ -28,8 +28,8 @@ def get_predicted(seedId):
 
   # Get predicted faults for the nodeId
   # NOTE: If node_id does not exist in df, this will NOT throw an error
-  predicted = df[df["node_id"] == seedId]
-  predicted = set(predicted["possible_fault"])
+  predicted = df[df["nodeID"] == seedId]
+  predicted = set(predicted["possibleFault"])
 
   # Handle case in which no fault has been predicted yet
   if len(predicted) == 0:
@@ -88,8 +88,6 @@ def cot_analysis(flow_data):
   seedId, system_nodes, assembly_nodes, component_nodes = extract_node_data(flow_data=flow_data)
   
   predicted = get_predicted(seedId=seedId) 
-
-  print(predicted)
 
   p = f"""
     You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possbile MECHANICAL fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system.

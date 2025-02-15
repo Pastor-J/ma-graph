@@ -52,12 +52,7 @@ function App() {
 
     ws.onmessage = (event) => {
       console.log('Message from server:', event.data);
-      setResponse(event.data);
-      const responseObject = JSON.parse(event.data);
-      const reasoning = responseObject.reasoning;
-      const possibleFault = responseObject.possibleFault;
-      const possibleConsequences = responseObject.possibleConsequences;
-      console.log(possibleConsequences);
+      setResponse(JSON.parse(event.data));
     };
 
     ws.onerror = (error) => {
@@ -81,7 +76,7 @@ function App() {
   // Load form localStorage on startup
   useEffect(() => {
     onRestore();
-  }, [])
+  })
 
   let id = Number(nodes.length) + 1;
   const getId = () => `${id++}`
