@@ -113,8 +113,6 @@ def cot_analysis(flow_data):
   msg = llm.invoke(p)
   content = msg.content
 
-  analysis = {}
-
   start_think = "<think>"
   end_think = "</think>"
 
@@ -132,25 +130,18 @@ def cot_analysis(flow_data):
       elif "Consequences" in element:
         consequences = element.split(": ")[-1]
 
-    # TODO: Check if creation of dict for transmission and dataframe can be combined.
-    analysis["possibleFault"] = possible_fault
-    analysis["possibleConsequences"] = consequences
-    analysis["reasoning"] = reasoning
-
-    new_entries = {
-      "node_id": [seedId],
-      "possible_fault": [possible_fault],
-      "possible_consequences": [consequences],
+    analysis = {
+      "nodeID": [seedId],
+      "possibleFault": [possible_fault],
+      "possibleConsequences": [consequences],
       "reasoning": [reasoning]  
     }
 
     # Add new entries to dataframe and store it on disc
-    new_row = pd.DataFrame(new_entries)
+    new_row = pd.DataFrame(analysis)
     df = pd.concat([df, new_row], ignore_index=True)
     df = df.drop_duplicates() # Make sure there are no duplicates
     df.to_pickle("data")
-
-    print(df)
 
     return analysis
   
