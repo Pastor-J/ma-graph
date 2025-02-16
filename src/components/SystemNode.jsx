@@ -1,20 +1,8 @@
 import { Handle, Position } from '@xyflow/react';
 import './SystemNode.css';
-import { useState, useCallback} from 'react';
 
-function SystemNode({ data }) {
-  const [identifier, setIdentifier] = useState(data.identifier || '');
-
-  const onSystemChange = useCallback((evt) => {
-    setIdentifier(evt.target.value);
-    data.identifier = evt.target.value;
-  }, [data])
-
-  // const onSystemKeyDown = useCallback((evt) => {
-  //   if (evt.key === 'Enter') {
-  //     data.identifer = system;
-  //   }
-  // }, [system, data])
+// Among other args id, data can be accessed here. See ReactFlow documentation "NodeProps" for more info
+function SystemNode({ id, data }) {
 
   return (
     <>
@@ -24,9 +12,8 @@ function SystemNode({ data }) {
         <input
           className='system-input-field'
           placeholder='System Component'
-          onChange={onSystemChange}
-          value={identifier}
-          // onKeyDown={onSystemKeyDown}
+          onChange={(event) => data.onChange(event, "identifier", id)}
+          value={data.identifier || ''}
         />
 
       </div>

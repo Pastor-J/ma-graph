@@ -26,23 +26,55 @@ const nodeTypes = {
   assemblyNode: AssemblyNode
 };
 
-const initialNodes = [
-  { id: '1', type: 'systemNode', position: {x: 150, y: 250}, data: { label: 'node1', identifier: 'Cooling System' } } // Fix this
-];
-
-const initialEdges = [
-  { id: '1', source: '1', target: '2'}
-];
-
 function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  // Set states for nodes and edges
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // Set state describing the flow. Important to safe and load the flow
   const [rfInstance, setRfInstance] = useState(null);
   const { screenToFlowPosition } = useReactFlow(); 
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
+
+  // Initialize states for websocket, response from backend and currently selected node
   const [socket, setSocket] = useState(null);
   const [response, setResponse] = useState('');
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
 
+  // Function for handling user inputs
+  const onChange = useCallback((event, field, nodeID) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id !== nodeID) {
+          return node;
+        }
+
+        // Get user input
+        const user_input = event.target.value;
+
+        // Update node with user input
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            [field]: user_input,
+          },
+        };
+      })
+    );
+  }, [setNodes]);
+
+  // Insert initial system node
+  useEffect(() => {
+    setNodes([
+      { id: '1', 
+        type: 'systemNode', 
+        position: {x: 150, y: 250}, 
+        data: { identifier: '', onChange: onChange } 
+      }
+    ]); 
+  }, [onChange, setNodes]);
+  
+  // Websocket
   useEffect(() => {
     const ws = new WebSocket(SOCKET_URL);
 
@@ -51,6 +83,7 @@ function App() {
     };
 
     ws.onmessage = (event) => {
+      // Get response from backend
       console.log('Message from server:', event.data);
       setResponse(JSON.parse(event.data));
     };
@@ -73,62 +106,77 @@ function App() {
     };
   }, []);
 
-  // Load form localStorage on startup
+  // Insert Information provided by backend into GUI
+  useEffect(() => {
+    if (!response || !response.nodeID) return; // Ensure response exists
+    
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id == response.nodeID) {
+          console.log("Found it!");
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              fault: response.possibleFault,
+            }
+          }
+        }
+        return node; 
+      })
+    );
+  }, [response, setNodes]);
+  
+  //Load form localStorage on startup
   useEffect(() => {
     onRestore();
-  })
+  }, [])
 
+  // Functionality to calculate id for a new potential node
   let id = Number(nodes.length) + 1;
   const getId = () => `${id++}`
 
+  // Function handling connections between nodes
   const onConnect = useCallback(
     (params) => setEdges((eds) => {
-      console.log(params);
       return addEdge(params, eds);
     }), [setEdges],
   )
 
+  // Function saving flow to local storage
   const onSave = useCallback(() => {
     if (rfInstance) {
+      // Get object describing the flow and save to local storage
       const flow = rfInstance.toObject();
       localStorage.setItem('flow', JSON.stringify(flow));
     }
   }, [rfInstance])
 
+  // Function allowing flow to be restored from local storage
   const onRestore = useCallback(() => {
     const restoreFlow = () => {
       const flow = JSON.parse(localStorage.getItem('flow'));
- 
+
+      // Restore the flow. Make sure to add onChange function to data object, as functions cannot be saved to local storage
       if (flow) {
-        // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
-        setNodes(flow.nodes || []);
+        setNodes(
+          (flow.nodes || []).map(node => ({
+            ...node,
+            data: {
+              ...node.data,
+              onChange: onChange,  // Reassign function reference
+            },
+          }))
+        );
         setEdges(flow.edges || []);
-        // setViewport({ x, y, zoom });
       }
     };
  
     restoreFlow();   
-  }, [setNodes, setEdges]);
 
-  // const onAnalyze = useCallback(() => {
-  //   if (rfInstance) {
-  //     const flow = rfInstance.toObject();
+  }, [setNodes, setEdges, onChange]);
 
-  //     try {
-  //       //TODO: Async Await
-  //       fetch('http://127.0.0.1:5000/api/analyze', {
-  //         method: 'POST',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify(flow),
-  //       });
-  //       console.log('data send');
-  //     } catch(error) {
-  //       console.log(`Unexpected Error: ${error}`);
-  //     }
-
-  //   }
-  // }, [rfInstance]); // useCallback caches functions and only updates it if elems in dependency array change
-
+  // Function handling for "Analyze" Button
   const onAnalyze = useCallback(() => {
     if (rfInstance && socket && socket.readyState === WebSocket.OPEN) {
       const flow = rfInstance.toObject(); // Convert flow data to an object
@@ -145,35 +193,46 @@ function App() {
     }
   }, [rfInstance, socket, selectedNodeId]);
 
+  // Function allowing to add new nodes from the right handle of system and assembly node
   const onConnectEnd = useCallback(
     (event, connectionState) => {
       if (!connectionState.isValid) {
+        // Get id for new node
         const id = getId();
-        const type = connectionState.fromNode.type;
+
+        // Get node type from source node of new connection
+        const sourceType = connectionState.fromNode.type;
+
+        // Get position
         const { clientX, clientY} = 
           'changedTouches' in event ? event.changedTouches[0] : event;
-        let newType = '';
 
-        if (type == 'systemNode') {
-          newType = 'assemblyNode';
-        } else if (type == 'assemblyNode') {
-          newType = 'componentNode';
+        // Determine target node type based on source node type
+        let targetType = '';
+
+        if (sourceType == 'systemNode') {
+          targetType = 'assemblyNode';
+        } else if (sourceType == 'assemblyNode') {
+          targetType = 'componentNode';
         };
 
+        // Define new node. Allow modification of node by passing onChange function
         const newNode = {
           id: id,
-          type: newType,
+          type: targetType,
           position: screenToFlowPosition({
             x: clientX,
             y: clientY
           }),
-          data: {label: `node${id}`}
+          data: {label: `node${id}`, onChange: onChange}
         }
         
+        // Update nodes state
         setNodes((nds) => {
           return nds.concat(newNode);
         })
         
+        // Update edges state
         setEdges((eds) => {
           return eds.concat({ id, source: connectionState.fromNode.id, target: id}); 
        })

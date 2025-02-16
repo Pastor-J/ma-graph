@@ -1,17 +1,16 @@
 {
-    "seedId": "11",
+    "seedId": "3",
     "flow": {
         "nodes": [
             {
                 "id": "1",
                 "type": "systemNode",
                 "position": {
-                    "x": 150,
-                    "y": 454
+                    "x": 40,
+                    "y": 250
                 },
                 "data": {
-                    "label": "node1",
-                    "identifier": "Cooling System"
+                    "identifier": "Cooler"
                 },
                 "measured": {
                     "width": 197,
@@ -24,8 +23,8 @@
                 "id": "2",
                 "type": "assemblyNode",
                 "position": {
-                    "x": 463.50620082897126,
-                    "y": -503.92760644394366
+                    "x": 343,
+                    "y": 186
                 },
                 "data": {
                     "label": "node2",
@@ -41,182 +40,24 @@
             },
             {
                 "id": "3",
-                "type": "assemblyNode",
+                "type": "componentNode",
                 "position": {
-                    "x": 443.772575073462,
-                    "y": 1274.4898288808467
+                    "x": 750,
+                    "y": 150
                 },
                 "data": {
                     "label": "node3",
-                    "identifier": "Hose",
-                    "func": "Distribute water between engine block and radiator"
-                },
-                "measured": {
-                    "width": 197,
-                    "height": 123
-                },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "4",
-                "type": "componentNode",
-                "position": {
-                    "x": 820.5714467316271,
-                    "y": -798.7346159196251
-                },
-                "data": {
-                    "label": "node4",
-                    "identifier": "Blower fan",
-                    "func": "Create air flow for improved heat exchange"
+                    "identifier": "Heat exchanger",
+                    "func": "Cools water via heat exchange between water and air"
                 },
                 "measured": {
                     "width": 292,
                     "height": 233
                 },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "5",
-                "type": "assemblyNode",
-                "position": {
-                    "x": 490.5499679220742,
-                    "y": 351.1640608397655
-                },
-                "data": {
-                    "label": "node5",
-                    "identifier": "Water pump",
-                    "func": "Generate water flow"
-                },
-                "measured": {
-                    "width": 197,
-                    "height": 123
-                },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "6",
-                "type": "assemblyNode",
-                "position": {
-                    "x": 456,
-                    "y": 796.274587854242
-                },
-                "data": {
-                    "label": "node6",
-                    "identifier": "Thermostat",
-                    "func": "Regulates if water flows through radiator or not. Thereby ensuring the water temperature is in the optimal range."
-                },
-                "measured": {
-                    "width": 197,
-                    "height": 123
-                },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "7",
-                "type": "assemblyNode",
-                "position": {
-                    "x": 458.140385531222,
-                    "y": -222.37902326766823
-                },
-                "data": {
-                    "label": "node7",
-                    "identifier": "Temperature Sensor",
-                    "func": "Measures water temperature"
-                },
-                "measured": {
-                    "width": 197,
-                    "height": 123
-                },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "8",
-                "type": "componentNode",
-                "position": {
-                    "x": 812.6265749395176,
-                    "y": 45.26345903533097
-                },
-                "data": {
-                    "label": "node8",
-                    "identifier": "Impeller",
-                    "func": "Pumps Water"
-                },
-                "measured": {
-                    "width": 292,
-                    "height": 233
-                },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "9",
-                "type": "componentNode",
-                "position": {
-                    "x": 798.6805259495907,
-                    "y": 392.7641528483881
-                },
-                "data": {
-                    "label": "node9",
-                    "identifier": "Seal",
-                    "func": "Prevents water leackage"
-                },
-                "measured": {
-                    "width": 292,
-                    "height": 233
-                },
-                "selected": true,
-                "dragging": false
-            },
-            {
-                "id": "10",
-                "type": "componentNode",
-                "position": {
-                    "x": 796.2318531647903,
-                    "y": 678.6805259495908
-                },
-                "data": {
-                    "label": "node10",
-                    "identifier": "Housing",
-                    "func": "Housing of water pump components"
-                },
-                "measured": {
-                    "width": 292,
-                    "height": 233
-                },
-                "selected": false,
-                "dragging": false
-            },
-            {
-                "id": "11",
-                "type": "componentNode",
-                "position": {
-                    "x": 815.6627273255049,
-                    "y": -423.03550281436713
-                },
-                "data": {
-                    "label": "node11",
-                    "identifier": "Heat Exchanger",
-                    "func": "Enables heat exchange between water and air"
-                },
-                "measured": {
-                    "width": 292,
-                    "height": 233
-                },
-                "selected": false,
-                "dragging": false
+                "selected": true
             }
         ],
         "edges": [
-            {
-                "id": "e1-2",
-                "source": "1",
-                "target": "2"
-            },
             {
                 "id": "2",
                 "source": "1",
@@ -224,54 +65,14 @@
             },
             {
                 "id": "3",
-                "source": "1",
+                "source": "2",
                 "target": "3"
-            },
-            {
-                "id": "4",
-                "source": "2",
-                "target": "4"
-            },
-            {
-                "id": "5",
-                "source": "1",
-                "target": "5"
-            },
-            {
-                "id": "6",
-                "source": "1",
-                "target": "6"
-            },
-            {
-                "id": "7",
-                "source": "1",
-                "target": "7"
-            },
-            {
-                "id": "8",
-                "source": "5",
-                "target": "8"
-            },
-            {
-                "id": "9",
-                "source": "5",
-                "target": "9"
-            },
-            {
-                "id": "10",
-                "source": "5",
-                "target": "10"
-            },
-            {
-                "id": "11",
-                "source": "2",
-                "target": "11"
             }
         ],
         "viewport": {
-            "x": 61.50149188695434,
-            "y": 483.59541107789096,
-            "zoom": 0.6820739174396774
+            "x": 0,
+            "y": 0,
+            "zoom": 1
         }
     }
 }
