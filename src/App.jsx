@@ -84,7 +84,7 @@ function App() {
 
     ws.onmessage = (event) => {
       // Get response from backend
-      console.log('Message from server:', event.data);
+      // console.log('Message from server:', event.data);
       setResponse(JSON.parse(event.data));
     };
 
@@ -109,7 +109,7 @@ function App() {
   // Insert Information provided by backend into GUI
   useEffect(() => {
     if (!response || !response.nodeID) return; // Ensure response exists
-    
+
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id == response.nodeID) {
