@@ -1,0 +1,78 @@
+{
+    "seedId": "3",
+    "flow": {
+        "nodes": [
+            {
+                "id": "1",
+                "type": "systemNode",
+                "position": {
+                    "x": 40,
+                    "y": 250
+                },
+                "data": {
+                    "identifier": "Cooler"
+                },
+                "measured": {
+                    "width": 197,
+                    "height": 74
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "2",
+                "type": "assemblyNode",
+                "position": {
+                    "x": 343,
+                    "y": 186
+                },
+                "data": {
+                    "label": "node2",
+                    "identifier": "Radiator",
+                    "func": "Cool down water"
+                },
+                "measured": {
+                    "width": 197,
+                    "height": 123
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "3",
+                "type": "componentNode",
+                "position": {
+                    "x": 750,
+                    "y": 150
+                },
+                "data": {
+                    "label": "node3",
+                    "identifier": "Heat exchanger",
+                    "func": "Cools water via heat exchange between water and air"
+                },
+                "measured": {
+                    "width": 292,
+                    "height": 233
+                },
+                "selected": true
+            }
+        ],
+        "edges": [
+            {
+                "id": "2",
+                "source": "1",
+                "target": "2"
+            },
+            {
+                "id": "3",
+                "source": "2",
+                "target": "3"
+            }
+        ],
+        "viewport": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+        }
+    }
+}

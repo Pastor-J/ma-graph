@@ -1,6 +1,23 @@
-.component-node-container {
+/* Node border if node is not selected */
+.react-flow__node-componentNode {
   border: 2px solid rgb(15, 131, 154);
   border-radius: 10px;
+}
+
+/* Node border if node is selected  */
+.react-flow__node-componentNode.selected {
+  border: 2px solid #FF0073 !important;
+  animation: pulseBorder 1.5s infinite;
+}
+
+/* Animation for border when node is selected */
+@keyframes pulseBorder {
+  0% { box-shadow: 0 0 0 0 rgba(255,192,203,0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(255,192,203,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,192,203,0); }
+}
+
+.component-node-container {
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -23,3 +40,4 @@
   padding-top: 5px;
   text-align: left;
 }
+

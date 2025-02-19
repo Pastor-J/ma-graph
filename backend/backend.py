@@ -1,6 +1,6 @@
 # from flask import Flask, request, jsonify
 # from flask_cors import CORS
-from analysis import simple_analysis
+from analysis import simple_analysis, cot_analysis
 
 # app = Flask(__name__)
 # CORS(app)
@@ -29,11 +29,15 @@ import json
 async def analyze(websocket, path):
     async for message in websocket:
         # Parse the received flow data
+      
         flow_data = json.loads(message)
         # print("Received flow data:", flow_data)
+        with open('data.json', 'w') as file:
+            json.dump(flow_data, file, indent=4)
 
-        result = simple_analysis(flow_data=flow_data)
-
+        # result = simple_analysis(flow_data=flow_data)
+        result = cot_analysis(flow_data)
+        result = json.dumps(result)
         # Send analysis result back to the client
         await websocket.send(result)
 

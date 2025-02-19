@@ -1,0 +1,13 @@
+.chatbox-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid;
+  border-radius: 5px;
+  max-width: 200px;
+  max-height: 400px;
+  overflow: auto; 
+  text-align: left;
+}
