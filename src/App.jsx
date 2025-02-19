@@ -33,7 +33,7 @@ function App() {
 
   // Set state describing the flow. Important to safe and load the flow
   const [rfInstance, setRfInstance] = useState(null);
-  const { screenToFlowPosition } = useReactFlow(); 
+  const {screenToFlowPosition} = useReactFlow(); 
 
   // Initialize states for websocket, response from backend and currently selected node
   const [socket, setSocket] = useState(null);
@@ -113,7 +113,6 @@ function App() {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id == response.nodeID) {
-          console.log("Found it!");
           return {
             ...node,
             data: {
@@ -263,7 +262,7 @@ function App() {
             <button className='panel-button' onClick={onRestore}>Restore</button>
           </Panel>
         </ReactFlow>
-        <Chatbox response={ response }/>
+        <Chatbox response={response}/>
     </div>
   );
 };
