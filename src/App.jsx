@@ -1,7 +1,12 @@
-import { Routes, Route } from "react-router-dom";
+// Import router to allow multiple webpages website
+import { Routes, Route } from "react-router";
+
+// Import react functionality
+import { useState } from 'react'
+
+// Import pages
 import FlowWithProvider from "./Flow";
 import FMEATable from "./Table";
-import { useState } from 'react'
 
 const initialFaults = [{
   _id: "123",
