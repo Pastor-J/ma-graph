@@ -42,19 +42,21 @@
                 "id": "3",
                 "type": "componentNode",
                 "position": {
-                    "x": 750,
-                    "y": 150
+                    "x": 644,
+                    "y": 102
                 },
                 "data": {
                     "label": "node3",
                     "identifier": "Heat exchanger",
-                    "func": "Cools water via heat exchange between water and air"
+                    "func": "Cools water via heat exchange between water and air",
+                    "fault": ""
                 },
                 "measured": {
                     "width": 292,
                     "height": 233
                 },
-                "selected": true
+                "selected": true,
+                "dragging": false
             }
         ],
         "edges": [
