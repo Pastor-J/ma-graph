@@ -1,12 +1,17 @@
 // Import router to allow multiple webpages website
-import { Routes, Route } from "react-router";
+import { Routes, Route } from "react-router-dom";
 
 // Import react functionality
 import { useState } from 'react'
+import { 
+  ReactFlowProvider,
+  useNodesState,
+ } from "@xyflow/react";
 
 // Import pages
-import FlowWithProvider from "./Flow";
-import FMEATable from "./Table";
+import Flow from "./pages/Flow";
+import FMEATable from "./pages/Table";
+
 
 const initialFaults = [{
   _id: "123",
@@ -24,7 +29,10 @@ const initialFaults = [{
 
 
 function App() {
+  // DUMMY STATE!
   const [faults, setFaults] = useState(initialFaults);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
   const handleFaultUpdate = (updatedFault) => {
     setFaults(faults.map(fault => 
@@ -36,8 +44,16 @@ function App() {
     <div className="App">
         <Routes>
           <Route 
-            path="/"
-            element={<FlowWithProvider/>}
+            index
+            element={
+              <ReactFlowProvider>
+                <Flow 
+                  nodes={nodes} 
+                  setNodes={setNodes} 
+                  onNodesChange={onNodesChange}
+                />
+              </ReactFlowProvider>
+            }
           />
           <Route
             path="fmea-table"

@@ -1,22 +1,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import { 
   ReactFlow, 
-  useNodesState, 
   useEdgesState, 
   addEdge,
   Panel,
   useReactFlow,
-  ReactFlowProvider
  } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
 import './Flow.css'
 
-import ComponentNode from './components/ComponentNode';
-import SystemNode from './components/SystemNode';
-import AssemblyNode from './components/AssemblyNode';
-import Chatbox from './components/Chatbox';
+import ComponentNode from '../components/ComponentNode';
+import SystemNode from '../components/SystemNode';
+import AssemblyNode from '../components/AssemblyNode';
+import Chatbox from '../components/Chatbox';
 
 const SOCKET_URL = 'ws://127.0.0.1:5000';
 
@@ -26,9 +24,9 @@ const nodeTypes = {
   assemblyNode: AssemblyNode
 };
 
-function Flow() {
+function Flow({nodes, setNodes, onNodesChange}) {
   // Set states for nodes and edges
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  // const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   // Set state describing the flow. Important to safe and load the flow
@@ -267,12 +265,4 @@ function Flow() {
   );
 };
 
-function FlowWithProvider() {
-  return (
-    <ReactFlowProvider>
-      <Flow />
-    </ReactFlowProvider>
-  );
-}
-
-export default FlowWithProvider;
+export default Flow;
