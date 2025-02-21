@@ -86,7 +86,7 @@ llm = ChatOllama(model="deepseek-r1:1.5b", temperature=0.4)
 def cot_analysis(flow_data):
   global df
   seedId, system_nodes, assembly_nodes, component_nodes = extract_node_data(flow_data=flow_data)
-  
+
   predicted = get_predicted(seedId=seedId) 
 
   p = f"""

@@ -1,32 +1,38 @@
-import { useState, useCallback, useEffect } from 'react';
+import { 
+  useState, 
+  useCallback, 
+  useEffect 
+} from 'react';
+
 import { 
   ReactFlow, 
   useEdgesState, 
+  useNodesState,
   addEdge,
   Panel,
   useReactFlow,
  } from '@xyflow/react';
 
+// Import styling
 import '@xyflow/react/dist/style.css';
-
 import './Flow.css'
 
+// Load custom nodes
 import ComponentNode from '../components/ComponentNode';
 import SystemNode from '../components/SystemNode';
 import AssemblyNode from '../components/AssemblyNode';
 import Chatbox from '../components/Chatbox';
 
-const SOCKET_URL = 'ws://127.0.0.1:5000';
-
+// Define node types
 const nodeTypes = { 
   componentNode: ComponentNode, 
   systemNode: SystemNode,
   assemblyNode: AssemblyNode
 };
 
-function Flow({nodes, setNodes, onNodesChange}) {
+function Flow({socket, response}) {
   // Set states for nodes and edges
-  // const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   // Set state describing the flow. Important to safe and load the flow
@@ -34,9 +40,11 @@ function Flow({nodes, setNodes, onNodesChange}) {
   const {screenToFlowPosition} = useReactFlow(); 
 
   // Initialize states for websocket, response from backend and currently selected node
-  const [socket, setSocket] = useState(null);
-  const [response, setResponse] = useState('');
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
+  // const [selectedNodeId, setSelectedNodeId] = useState(null);
+
+  // Functionality to calculate id for a new potential node
+  let id = Number(nodes.length) + 1;
+  const getId = () => `${id++}`
 
   // Function for handling user inputs
   const onChange = useCallback((event, field, nodeID) => {
@@ -72,38 +80,6 @@ function Flow({nodes, setNodes, onNodesChange}) {
     ]); 
   }, [onChange, setNodes]);
   
-  // Websocket
-  useEffect(() => {
-    const ws = new WebSocket(SOCKET_URL);
-
-    ws.onopen = () => {
-      console.log('WebSocket connection established');
-    };
-
-    ws.onmessage = (event) => {
-      // Get response from backend
-      // console.log('Message from server:', event.data);
-      setResponse(JSON.parse(event.data));
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    setSocket(ws);
-
-    // Cleanup on unmount
-    return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
-      }
-    };
-  }, []);
-
   // Insert Information provided by backend into GUI
   useEffect(() => {
     if (!response || !response.nodeID) return; // Ensure response exists
@@ -129,9 +105,30 @@ function Flow({nodes, setNodes, onNodesChange}) {
     onRestore();
   }, [])
 
-  // Functionality to calculate id for a new potential node
-  let id = Number(nodes.length) + 1;
-  const getId = () => `${id++}`
+  // Function handling for "Analyze" Button
+  const onAnalyze = useCallback((nodeID) => {
+    console.log(socket)
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+
+    if (rfInstance) {
+      const flow = rfInstance.toObject(); // Convert flow data to an object
+      const comType = 'requestAnalysis';
+      // const seedId = selectedNodeId;
+      const payload = {
+        comType,
+        seedId: nodeID,
+        flow
+      }
+
+      socket.send(JSON.stringify(payload)); // Send flow data as JSON
+      console.log('Flow data sent via WebSocket');
+    } else {
+      console.error('WebSocket is not connected');
+    }
+  }, [rfInstance, socket]);
 
   // Function handling connections between nodes
   const onConnect = useCallback(
@@ -162,6 +159,7 @@ function Flow({nodes, setNodes, onNodesChange}) {
             data: {
               ...node.data,
               onChange: onChange,  // Reassign function reference
+              onAnalyze: node.type === 'componentNode' ? onAnalyze : undefined
             },
           }))
         );
@@ -171,24 +169,8 @@ function Flow({nodes, setNodes, onNodesChange}) {
  
     restoreFlow();   
 
-  }, [setNodes, setEdges, onChange]);
+  }, [setNodes, setEdges, onChange, onAnalyze]);
 
-  // Function handling for "Analyze" Button
-  const onAnalyze = useCallback(() => {
-    if (rfInstance && socket && socket.readyState === WebSocket.OPEN) {
-      const flow = rfInstance.toObject(); // Convert flow data to an object
-      const seedId = selectedNodeId;
-      const payload = {
-        seedId,
-        flow
-      }
-
-      socket.send(JSON.stringify(payload)); // Send flow data as JSON
-      console.log('Flow data sent via WebSocket');
-    } else {
-      console.error('WebSocket is not connected');
-    }
-  }, [rfInstance, socket, selectedNodeId]);
 
   // Function allowing to add new nodes from the right handle of system and assembly node
   const onConnectEnd = useCallback(
@@ -196,6 +178,7 @@ function Flow({nodes, setNodes, onNodesChange}) {
       if (!connectionState.isValid) {
         // Get id for new node
         const id = getId();
+        console.log(id);
 
         // Get node type from source node of new connection
         const sourceType = connectionState.fromNode.type;
@@ -221,7 +204,11 @@ function Flow({nodes, setNodes, onNodesChange}) {
             x: clientX,
             y: clientY
           }),
-          data: {label: `node${id}`, onChange: onChange}
+          data: {
+            label: `node${id}`, 
+            onChange: onChange,
+            onAnalyze: targetType === 'componentNode' ? onAnalyze : undefined
+          }
         }
         
         // Update nodes state
@@ -237,9 +224,9 @@ function Flow({nodes, setNodes, onNodesChange}) {
     }
   );
 
-  const onNodeClick = (event, node) => {
-    setSelectedNodeId(node.id);
-  }
+  // const onNodeClick = (event, node) => {
+  //   setSelectedNodeId(node.id);
+  // }
 
   return (
     <div style={{ width: '100vw', height: '100vh'}}>      
@@ -248,14 +235,13 @@ function Flow({nodes, setNodes, onNodesChange}) {
           edges={edges} 
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
+          // onNodeClick={onNodeClick}
           onInit={setRfInstance}
           nodeTypes={nodeTypes}
           onConnect={onConnect}
           onConnectEnd={onConnectEnd}
         >
           <Panel position='top-right'>
-            <button className='panel-button' onClick={onAnalyze}>Analyze</button>
             <button className='panel-button' onClick={onSave}>Save</button>
             <button className='panel-button' onClick={onRestore}>Restore</button>
           </Panel>

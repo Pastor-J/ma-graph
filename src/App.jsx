@@ -2,16 +2,16 @@
 import { Routes, Route } from "react-router-dom";
 
 // Import react functionality
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   ReactFlowProvider,
-  useNodesState,
  } from "@xyflow/react";
 
 // Import pages
 import Flow from "./pages/Flow";
 import FMEATable from "./pages/Table";
 
+const SOCKET_URL = 'ws://127.0.0.1:5000/ws';
 
 const initialFaults = [{
   _id: "123",
@@ -29,10 +29,45 @@ const initialFaults = [{
 
 
 function App() {
+  // Websocket states
+  const [socket, setSocket] = useState(null);
+  const [response, setResponse] = useState("");
+
+  // Websocket handling
+  useEffect(() => {
+    const ws = new WebSocket(SOCKET_URL);
+
+    ws.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+
+    ws.onmessage = (event) => {
+      // Get response from backend
+      // console.log('Message from server:', event.data);
+      setResponse(JSON.parse(event.data));
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    setSocket(ws);
+
+    // Cleanup on unmount
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, []);
+
+
   // DUMMY STATE!
   const [faults, setFaults] = useState(initialFaults);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
   const handleFaultUpdate = (updatedFault) => {
     setFaults(faults.map(fault => 
@@ -47,11 +82,7 @@ function App() {
             index
             element={
               <ReactFlowProvider>
-                <Flow 
-                  nodes={nodes} 
-                  setNodes={setNodes} 
-                  onNodesChange={onNodesChange}
-                />
+                <Flow socket={socket} response={response}/>
               </ReactFlowProvider>
             }
           />

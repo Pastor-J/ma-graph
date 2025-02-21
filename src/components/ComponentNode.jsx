@@ -1,4 +1,4 @@
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, NodeToolbar } from '@xyflow/react';
 import './ComponentNode.css'
  
 // Among other args id, data can be accessed here. See ReactFlow documentation "NodeProps" for more info
@@ -6,6 +6,9 @@ function ComponentNode({ id, data }) {
 
   return (
     <>
+      <NodeToolbar isVisible={data.toolbarVisible} position={data.toolbarPosition}>
+        <button onClick={() => data.onAnalyze(id)}>Analyze</button>
+      </NodeToolbar>
       <Handle type="target" position={Position.Left}></Handle>
       <div className="component-node-container">
         <label htmlFor='text'></label>
