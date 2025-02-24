@@ -27,24 +27,28 @@ function FaultRow({ fault, onFaultChange }) {
         <input 
           value={fault.nodeID}
           onChange={(change) => handleChange("nodeID", change.target.value)}
+          className="fmea-table-input-box"
         />
       </td>
       <td>
         <input
           value={fault.fault}
           onChange={(change) => handleChange("fault", change.target.value)}
+          className="fmea-table-input-box"
         />
       </td>
       <td>
         <input 
           value={fault.possibleConsequence || ''}
           onChange={(change) => handleChange("possibleConsequence", change.target.value)}
+          className="fmea-table-input-box"
         />
       </td>
       <td>
         <input 
           value={fault.possibleCause || ''}
           onChange={(change) => handleChange("possibleCause", change.target.value)}
+          className="fmea-table-input-box"
         />
       </td>
     </tr>
@@ -93,17 +97,19 @@ function FMEATable({ faults, onFaultUpdate, socket}) {
   }
 
   return (
-    <>
-    <button onClick={onClick}>Save</button>
-    <table>
-      <thead>
-        <TitleRow />
-      </thead>
-      <tbody>
-        {rows}
-      </tbody>
-    </table>
-    </>
+    <div style={{ width: '100vw', height: '100vh'}}>
+      <button onClick={onClick} className="table-save-button">Save</button>
+      <div className="fmea-table-container">
+        <table>
+          <thead>
+            <TitleRow />
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 

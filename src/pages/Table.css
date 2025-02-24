@@ -1,12 +1,39 @@
-.fmea-table {
-  margin: 0 auto;
+.fmea-table-container {
+  /* Align table top center */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 75px;
+
+  height: 100vh;
 }
 
-.table-link {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: #your-color;
-  border-radius: 4px;
-  text-decoration: none;
-  /* Add other styles as needed */
+.table-save-button {
+  /* Align save button top right */
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.fmea-table-container th,
+.fmea-table-container td {
+  width: 25%;
+  padding: 8px;
+  border-right: 1px solid gray;
+  border-left: 1px solid gray;
+
+  /* Align top left*/
+  text-align: left;
+  vertical-align: top;
+}
+
+.fmea-table-container table {
+  width: 65%;
+  table-layout: fixed; /* This ensures columns maintain their width */
+  border-collapse: collapse; /* Ensures there is only one border */
+}
+
+.fmea-table-input-box {
+  border: none;
+  width: 80%;
 }
