@@ -124,6 +124,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Access faults
                     fault_col = app.db["faults"]
                     
+                    # Define upsert operation
                     bulk_operations = [
                         pymongo.UpdateOne(
                             {'_id': ObjectId(fault['_id'])},  # Convert string to ObjectId here
@@ -131,16 +132,15 @@ async def websocket_endpoint(websocket: WebSocket):
                                 **fault,
                                 '_id': ObjectId(fault['_id'])
                             }},
-                            upsert=True
+                            upsert=True # upsert: If the id is the same update, if not insert
                         ) 
                         for fault in updated_faults
                     ]
 
+                    # Update collection
                     fault_col.bulk_write(bulk_operations)
 
-                    for fault in fault_col.find():
-                        print(fault)
-
+                    # Define payload
                     payload = {
                         "comType": "faultsUpdate",
                     }
