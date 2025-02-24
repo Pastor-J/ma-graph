@@ -78,10 +78,10 @@ function FMEATable({ faults, onFaultUpdate, socket}) {
 
   const onClick = () => {
     // Check websocket connection
-    // if (!socket || socket.readyState !== WebSocket.OPEN) {
-    //   console.error('WebSocket is not connected');
-    //   return;
-    // }
+    if (!socket.current || socket.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
 
     const payload = {
       comType: 'updateFaults',

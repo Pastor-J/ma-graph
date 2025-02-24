@@ -105,7 +105,7 @@ function Flow({socket, response}) {
   // Function handling for "Analyze" Button
   const onAnalyze = useCallback((nodeID) => {
     // Check websocket connection
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socket.curennt || socket.current.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
     }
@@ -119,7 +119,7 @@ function Flow({socket, response}) {
         flow
       }
 
-      socket.send(JSON.stringify(payload)); // Send flow data as JSON
+      socket.current.send(JSON.stringify(payload)); // Send flow data as JSON
       console.log('Flow data sent via WebSocket');
     } else {
       console.error('WebSocket is not connected');
@@ -128,7 +128,7 @@ function Flow({socket, response}) {
 
   const onAccept = useCallback((id) => {
     // Check socket connection
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socket.current || socket.current.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
     }
@@ -142,7 +142,7 @@ function Flow({socket, response}) {
       matchingNode,
     }
 
-    socket.send(JSON.stringify(payload))
+    socket.current.send(JSON.stringify(payload))
     console.log('Accepted fault send via WebSocket')
   }, [nodes, socket])
 
@@ -156,7 +156,7 @@ function Flow({socket, response}) {
   // Function saving flow to local storage
   const onSave = useCallback(() => {
     // Check socket connection
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socket.current || socket.current.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
     }
@@ -172,7 +172,7 @@ function Flow({socket, response}) {
       }
 
       // Send payload via WebSocket
-      socket.send(JSON.stringify(payload));
+      socket.current.send(JSON.stringify(payload));
       console.log('Accepted fault send via WebSocket');
 
       // localStorage.setItem('flow', JSON.stringify(flow));
