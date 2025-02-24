@@ -31,19 +31,19 @@ function FaultRow({ fault, onFaultChange }) {
       </td>
       <td>
         <input
-          value={fault.possibleFault}
-          onChange={(change) => handleChange("possibleFault", change.target.value)}
+          value={fault.fault}
+          onChange={(change) => handleChange("fault", change.target.value)}
         />
       </td>
       <td>
         <input 
-          value={fault.possibleConsequence}
+          value={fault.possibleConsequence || ''}
           onChange={(change) => handleChange("possibleConsequence", change.target.value)}
         />
       </td>
       <td>
         <input 
-          value={fault.possibleCause}
+          value={fault.possibleCause || ''}
           onChange={(change) => handleChange("possibleCause", change.target.value)}
         />
       </td>
@@ -55,9 +55,9 @@ FaultRow.propTypes = {
   fault: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     nodeID: PropTypes.string.isRequired,
-    possibleFault: PropTypes.string.isRequired,
-    possibleConsequence: PropTypes.string.isRequired,
-    possibleCause: PropTypes.string.isRequired,
+    fault: PropTypes.string.isRequired,
+    possibleConsequence: PropTypes.string, // not required, user can insert fault manually
+    possibleCause: PropTypes.string, // not required, user can insert fault manually
   }).isRequired,
 };
 
@@ -111,8 +111,8 @@ FMEATable.propTypes = {
   faults: PropTypes.arrayOf(
     PropTypes.shape({
       nodeID: PropTypes.string.isRequired,
-      possibleFault: PropTypes.string.isRequired,
-      possibleConsequence: PropTypes.string.isRequired,
+      fault: PropTypes.string,
+      possibleConsequence: PropTypes.string,
     })
   ).isRequired,
 };

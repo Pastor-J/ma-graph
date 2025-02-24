@@ -135,7 +135,7 @@ function Flow({socket, response}) {
 
     // Get node with matching id
     const matchingNode = nodes.filter((node) => node.id === id)[0]
-    
+  
     // Define payload
     const payload = {
       comType: "acceptFault",
@@ -175,7 +175,7 @@ function Flow({socket, response}) {
       socket.current.send(JSON.stringify(payload));
       console.log('Accepted fault send via WebSocket');
 
-      // localStorage.setItem('flow', JSON.stringify(flow));
+      localStorage.setItem('flow', JSON.stringify(flow));
     }
   }, [socket, rfInstance])
 
@@ -212,7 +212,6 @@ function Flow({socket, response}) {
       if (!connectionState.isValid) {
         // Get id for new node
         const id = getId();
-        console.log(id);
 
         // Get node type from source node of new connection
         const sourceType = connectionState.fromNode.type;
@@ -245,6 +244,8 @@ function Flow({socket, response}) {
             onAccept: targetType === 'componentNode' ? onAccept : undefined
           }
         }
+
+        console.log(newNode);
         
         // Update nodes state
         setNodes((nds) => {
@@ -263,10 +264,6 @@ function Flow({socket, response}) {
   useEffect(() => {
     onRestore();
   }, [])
-
-  // const onNodeClick = (event, node) => {
-  //   setSelectedNodeId(node.id);
-  // }
 
   return (
     <div style={{ width: '100vw', height: '100vh'}}>      

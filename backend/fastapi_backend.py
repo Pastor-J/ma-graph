@@ -60,6 +60,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json(analysis)
 
                 case "acceptFault":
+                    print(flow_data)
                     # Get accepted fault
                     accepted_fault = flow_data["matchingNode"]
 
@@ -76,28 +77,44 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Add node to the beginning of the dictionary
                     fault_dict = dict(node_id, **data)
 
-                    # Add fault dictionary to database
-                    app.db["faults"].insert_one(fault_dict)
-
-                    # TODO: Add boolean value which proves successfull adding 
-                    await websocket.send_json(f"acceptFault: {message}")
-
-                case "requestFaults":
-                    # Access faults
+                    # Access fault collection
                     fault_col = app.db["faults"]
 
-                    # Get all elements, excluding _id field
-                    faults = fault_col.find({})
+                    # Add fault_dict to the collection
+                    fault_col.insert_one(fault_dict)
 
+                    # Get all elements and convert from BSON to JSON
+                    faults = fault_col.find({})
                     faults_json = dumps(faults)
 
+                    # Define payload
                     payload = {
                         "comType": "faultsResponse",
                         "faults": faults_json,
                     }
-                    print(faults_json)
 
                     await websocket.send_json(payload)
+
+                case "requestFaults":
+                    print("INFO: User requests faults")
+
+                    # Access faults
+                    fault_col = app.db["faults"]
+
+                    # Get all elements and convert from BSON to JSON
+                    faults = fault_col.find({})
+                    faults_json = dumps(faults)
+
+                    # Define payload
+                    payload = {
+                        "comType": "faultsResponse",
+                        "faults": faults_json,
+                    }
+
+                    # Send data to frontend
+                    await websocket.send_json(payload)
+
+                    print("INFO: Fault request successfull!")
 
                 case "updateFaults":
 
@@ -105,11 +122,11 @@ async def websocket_endpoint(websocket: WebSocket):
                         "comType": "faultsUpdate"
                     }
 
-                    print(f"Payload of Save {payload}")
-
                     await websocket.send_json(payload)
 
                 case "requestFlow":
+                    print("Requested Flow")
+
                     await websocket.send_json("test")
 
                 case "saveFlow":
@@ -130,10 +147,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "flow": json_flow,
                     }
 
-                    await websocket.send_json(payload)  
-
-                       
-            
+                    await websocket.send_json(payload)
 
     except Exception as e:
         print(f"Error: {e}")

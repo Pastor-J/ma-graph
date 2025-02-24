@@ -34,10 +34,14 @@ function App() {
         "comType": "requestFaults",
       }
 
-      // TODO: Request flow from database when opening the connection
-
       ws.send(JSON.stringify(payload))
       console.log('Requested faults via WebSocket Connection')
+
+      // Update payload 
+      payload["comType"] = "requestFlow";
+
+      ws.send(JSON.stringify(payload));
+      console.log('Requested flow via Websocket Connection');
     };
 
     ws.onmessage = (event) => {
