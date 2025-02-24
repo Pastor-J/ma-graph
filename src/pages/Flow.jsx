@@ -13,6 +13,8 @@ import {
   useReactFlow,
  } from '@xyflow/react';
 
+import { Link } from "react-router-dom";
+
 // Import styling
 import '@xyflow/react/dist/style.css';
 import './Flow.css'
@@ -43,7 +45,7 @@ function Flow({socket, response}) {
   // const [selectedNodeId, setSelectedNodeId] = useState(null);
 
   // Functionality to calculate id for a new potential node
-  let id = Number(nodes.length) + 1;
+  let id = Number(nodes.length) + 1; // TODO: make sure ids cannot be passed twice
   const getId = () => `${id++}`
 
   // Function for handling user inputs
@@ -100,14 +102,9 @@ function Flow({socket, response}) {
     );
   }, [response, setNodes]);
   
-  //Load form localStorage on startup
-  useEffect(() => {
-    onRestore();
-  }, [])
-
   // Function handling for "Analyze" Button
   const onAnalyze = useCallback((nodeID) => {
-    console.log(socket)
+    // Check websocket connection
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
@@ -115,10 +112,9 @@ function Flow({socket, response}) {
 
     if (rfInstance) {
       const flow = rfInstance.toObject(); // Convert flow data to an object
-      const comType = 'requestAnalysis';
-      // const seedId = selectedNodeId;
+
       const payload = {
-        comType,
+        comType: 'requestAnalysis',
         seedId: nodeID,
         flow
       }
@@ -130,6 +126,26 @@ function Flow({socket, response}) {
     }
   }, [rfInstance, socket]);
 
+  const onAccept = useCallback((id) => {
+    // Check socket connection
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+
+    // Get node with matching id
+    const matchingNode = nodes.filter((node) => node.id === id)[0]
+    
+    // Define payload
+    const payload = {
+      comType: "acceptFault",
+      matchingNode,
+    }
+
+    socket.send(JSON.stringify(payload))
+    console.log('Accepted fault send via WebSocket')
+  }, [nodes, socket])
+
   // Function handling connections between nodes
   const onConnect = useCallback(
     (params) => setEdges((eds) => {
@@ -139,12 +155,29 @@ function Flow({socket, response}) {
 
   // Function saving flow to local storage
   const onSave = useCallback(() => {
+    // Check socket connection
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+
     if (rfInstance) {
       // Get object describing the flow and save to local storage
       const flow = rfInstance.toObject();
-      localStorage.setItem('flow', JSON.stringify(flow));
+
+      // Define payload
+      const payload = {
+        comType: "saveFlow",
+        flow,
+      }
+
+      // Send payload via WebSocket
+      socket.send(JSON.stringify(payload));
+      console.log('Accepted fault send via WebSocket');
+
+      // localStorage.setItem('flow', JSON.stringify(flow));
     }
-  }, [rfInstance])
+  }, [socket, rfInstance])
 
   // Function allowing flow to be restored from local storage
   const onRestore = useCallback(() => {
@@ -159,7 +192,8 @@ function Flow({socket, response}) {
             data: {
               ...node.data,
               onChange: onChange,  // Reassign function reference
-              onAnalyze: node.type === 'componentNode' ? onAnalyze : undefined
+              onAnalyze: node.type === 'componentNode' ? onAnalyze : undefined,
+              onAccept: node.type === 'componentNode' ? onAccept : undefined
             },
           }))
         );
@@ -169,7 +203,7 @@ function Flow({socket, response}) {
  
     restoreFlow();   
 
-  }, [setNodes, setEdges, onChange, onAnalyze]);
+  }, [setNodes, setEdges, onChange, onAnalyze, onAccept]);
 
 
   // Function allowing to add new nodes from the right handle of system and assembly node
@@ -207,7 +241,8 @@ function Flow({socket, response}) {
           data: {
             label: `node${id}`, 
             onChange: onChange,
-            onAnalyze: targetType === 'componentNode' ? onAnalyze : undefined
+            onAnalyze: targetType === 'componentNode' ? onAnalyze : undefined,
+            onAccept: targetType === 'componentNode' ? onAccept : undefined
           }
         }
         
@@ -223,6 +258,11 @@ function Flow({socket, response}) {
       }
     }
   );
+
+  //Load form localStorage on startup
+  useEffect(() => {
+    onRestore();
+  }, [])
 
   // const onNodeClick = (event, node) => {
   //   setSelectedNodeId(node.id);
@@ -244,6 +284,7 @@ function Flow({socket, response}) {
           <Panel position='top-right'>
             <button className='panel-button' onClick={onSave}>Save</button>
             <button className='panel-button' onClick={onRestore}>Restore</button>
+            <Link to="/fmea-table" className="table-link"></Link>
           </Panel>
         </ReactFlow>
         <Chatbox response={response}/>

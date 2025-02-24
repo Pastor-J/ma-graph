@@ -2,7 +2,7 @@
 import { Routes, Route } from "react-router-dom";
 
 // Import react functionality
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   ReactFlowProvider,
  } from "@xyflow/react";
@@ -13,38 +13,72 @@ import FMEATable from "./pages/Table";
 
 const SOCKET_URL = 'ws://127.0.0.1:5000/ws';
 
-const initialFaults = [{
-  _id: "123",
-  nodeID: "1",
-  possibleFault: "Leackage",
-  possibleConsequence: "Wetness", 
-  possibleCause: "Brittle Material"
-}, {
-  _id: "456",
-  nodeID: "2",
-  possibleFault: "Blank wire",
-  possibleConsequence: "Electrocution",
-  possibleCause: "Brittle Insolation"
-}]
+// const initialFaults = [{
+//   _id: "123",
+//   nodeID: "1",
+//   possibleFault: "Leackage",
+//   possibleConsequence: "Wetness", 
+//   possibleCause: "Brittle Material"
+// }, {
+//   _id: "456",
+//   nodeID: "2",
+//   possibleFault: "Blank wire",
+//   possibleConsequence: "Electrocution",
+//   possibleCause: "Brittle Insolation"
+// }]
 
 
 function App() {
-  // Websocket states
-  const [socket, setSocket] = useState(null);
+  // Websocket 
+  const socket = useRef(null); // Use ref instead of state because socket remains constant
   const [response, setResponse] = useState("");
+
+  // States for faults
+  const [faults, setFaults] = useState([]);
 
   // Websocket handling
   useEffect(() => {
     const ws = new WebSocket(SOCKET_URL);
+    socket.current = ws;
 
     ws.onopen = () => {
       console.log('WebSocket connection established');
+
+      // Request faults from database when opening the connection
+      const payload = {
+        "comType": "requestFaults",
+      }
+
+      // TODO: Request flow from database when opening the connection
+
+      ws.send(JSON.stringify(payload))
+      console.log('Requested faults via WebSocket Connection')
     };
 
     ws.onmessage = (event) => {
       // Get response from backend
-      // console.log('Message from server:', event.data);
-      setResponse(JSON.parse(event.data));
+      const parsedData = JSON.parse(event.data)
+      const comType = parsedData["comType"];
+
+      switch(comType) {
+        case "analysisResponse":
+          setResponse(JSON.parse(event.data));
+          break;
+
+        case "faultsUpdate":
+          console.log("success!");
+          break;
+
+        case "faultsResponse": {
+          // Get faults from parsedData
+          const faults = JSON.parse(parsedData.faults);
+          setFaults(faults);
+          break;
+        }
+
+        case "restoreResponse":
+          break;
+      }
     };
 
     ws.onerror = (error) => {
@@ -55,8 +89,6 @@ function App() {
       console.log('WebSocket connection closed');
     };
 
-    setSocket(ws);
-
     // Cleanup on unmount
     return () => {
       if (ws.readyState === WebSocket.OPEN) {
@@ -65,16 +97,13 @@ function App() {
     };
   }, []);
 
-
-  // DUMMY STATE!
-  const [faults, setFaults] = useState(initialFaults);
-
   const handleFaultUpdate = (updatedFault) => {
     setFaults(faults.map(fault => 
       fault._id === updatedFault._id ? updatedFault : fault
     ));
     // Here you could also send the update to your backend
   };  
+
   return (
     <div className="App">
         <Routes>
@@ -88,7 +117,11 @@ function App() {
           />
           <Route
             path="fmea-table"
-            element={<FMEATable faults={faults} onFaultUpdate={handleFaultUpdate}/>}
+            element={<FMEATable 
+              faults={faults} 
+              onFaultUpdate={handleFaultUpdate} 
+              socket={socket}
+            />}
           />
         </Routes>
     </div>

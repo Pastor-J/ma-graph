@@ -61,23 +61,40 @@ FaultRow.propTypes = {
   }).isRequired,
 };
 
-function FMEATable({ faults, onFaultUpdate}) {
+function FMEATable({ faults, onFaultUpdate, socket}) {
   const handleFaultChange = (updatedFault) => {
     onFaultUpdate(updatedFault);
   }
-
   const rows = []
 
   faults.forEach(fault => {
     rows.push(
       <FaultRow 
         fault={fault} 
-        key={fault._id}
+        key={JSON.stringify(fault._id)}
         onFaultChange={handleFaultChange}/> 
     )
   });
 
+  const onClick = () => {
+    // Check websocket connection
+    // if (!socket || socket.readyState !== WebSocket.OPEN) {
+    //   console.error('WebSocket is not connected');
+    //   return;
+    // }
+
+    const payload = {
+      comType: 'updateFaults',
+      faults: faults,
+    };
+
+    socket.current.send(JSON.stringify(payload)); // Send flow data as JSON
+    console.log('Flow data sent via WebSocket');
+  }
+
   return (
+    <>
+    <button onClick={onClick}>Save</button>
     <table>
       <thead>
         <TitleRow />
@@ -86,6 +103,7 @@ function FMEATable({ faults, onFaultUpdate}) {
         {rows}
       </tbody>
     </table>
+    </>
   );
 }
 

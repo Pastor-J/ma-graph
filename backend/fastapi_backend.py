@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from analysis import simple_analysis, cot_analysis
 import json
+from bson.json_util import dumps
 from contextlib import asynccontextmanager
 
 # MongoDB
@@ -13,6 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 async def lifespan(app: FastAPI):
     # Connect to mongodb
     app.client = pymongo.MongoClient("mongodb://localhost:27017/")
+    app.db = app.client["fmea"]
 
     print("INFO: Connected to MongoDB")
 
@@ -40,36 +42,97 @@ async def websocket_endpoint(websocket: WebSocket):
     
     try:
         while True:
-            # Receive message
+            # Receive message and extract communication type
             message = await websocket.receive_text()
             flow_data = json.loads(message)
-            
-            # Extract communication type
             com_type = flow_data["comType"]
-
-            # Perform actions based on communicationt ype
+      
+            # Perform actions based on communication type
             match com_type:
-              case "requestAnalysis":
-                  # Process data
-                  result = cot_analysis(flow_data)
+                case "requestAnalysis":
+                    # Process data
+                    analysis = cot_analysis(flow_data)
 
-                  # # NOTE: Just a test
-                  # db = app.client["fmea"]
+                    # Add communication type to result
+                    analysis["comType"] = "analysisResponse"
 
-                  # fault_col = db.get_collection("faults")
+                    # Send result of analysis back to frontend
+                    await websocket.send_json(analysis)
 
-                  # for fault in fault_col.find():
-                  #     print(fault)
-                  
-                  # # NOTE: End
+                case "acceptFault":
+                    # Get accepted fault
+                    accepted_fault = flow_data["matchingNode"]
 
-                  # Send result of analysis back to frontend
-                  await websocket.send_json(result)
+                    # Filter out all key-value pairs except for id, data
+                    accepted_fault = filter(lambda item: item[0] in {'id', 'data'}, accepted_fault.items())
+                    accepted_fault = dict(accepted_fault)
+                    node_id = {"nodeID": accepted_fault["id"]}
 
-              case 2:
-                  return "Two"
-              case _:
-                  return "Default case"            
+                    # Filter data further
+                    data = accepted_fault["data"]
+                    data = filter(lambda item: item[0] not in {'label'}, data.items())
+                    data = dict(data)
+                    
+                    # Add node to the beginning of the dictionary
+                    fault_dict = dict(node_id, **data)
+
+                    # Add fault dictionary to database
+                    app.db["faults"].insert_one(fault_dict)
+
+                    # TODO: Add boolean value which proves successfull adding 
+                    await websocket.send_json(f"acceptFault: {message}")
+
+                case "requestFaults":
+                    # Access faults
+                    fault_col = app.db["faults"]
+
+                    # Get all elements, excluding _id field
+                    faults = fault_col.find({})
+
+                    faults_json = dumps(faults)
+
+                    payload = {
+                        "comType": "faultsResponse",
+                        "faults": faults_json,
+                    }
+                    print(faults_json)
+
+                    await websocket.send_json(payload)
+
+                case "updateFaults":
+
+                    payload = {
+                        "comType": "faultsUpdate"
+                    }
+
+                    print(f"Payload of Save {payload}")
+
+                    await websocket.send_json(payload)
+
+                case "requestFlow":
+                    await websocket.send_json("test")
+
+                case "saveFlow":
+                    # Access flow collection
+                    flow_col = app.db["flows"]
+                    
+                    # Get last entry
+                    last_flow = flow_col.find().sort('_id', -1).limit(1)
+                    json_flow = dumps(last_flow[0])
+
+                    # Remove _id 
+                    json_flow = json.loads(json_flow)
+                    json_flow = filter(lambda item: item[0] not in {'_id'}, json_flow.items())
+                    json_flow = dict(json_flow)
+
+                    payload = {
+                        "comType": "flow",
+                        "flow": json_flow,
+                    }
+
+                    await websocket.send_json(payload)  
+
+                       
             
 
     except Exception as e:

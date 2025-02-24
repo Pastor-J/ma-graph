@@ -3,11 +3,14 @@ import './ComponentNode.css'
  
 // Among other args id, data can be accessed here. See ReactFlow documentation "NodeProps" for more info
 function ComponentNode({ id, data }) {
-
+  // console.log(data.fault);
   return (
     <>
       <NodeToolbar isVisible={data.toolbarVisible} position={data.toolbarPosition}>
-        <button onClick={() => data.onAnalyze(id)}>Analyze</button>
+        <button 
+          onClick={() => (data.fault == '' || !data.fault) ? data.onAnalyze(id) : data.onAccept(id)}>
+          {(data.fault == '' || !data.fault) ? "Analyze" : "Accept"}
+        </button>
       </NodeToolbar>
       <Handle type="target" position={Position.Left}></Handle>
       <div className="component-node-container">
