@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types'
 import './Table.css'
+// Link element to switch between webpages efficiently
+import { Link } from "react-router-dom";
 
 function TitleRow() {
   return (
@@ -99,6 +101,7 @@ function FMEATable({ faults, onFaultUpdate, socket}) {
   return (
     <div style={{ width: '100vw', height: '100vh'}}>
       <button onClick={onClick} className="table-save-button">Save</button>
+      <Link to="/" className="flow-link-button">Flow</Link>
       <div className="fmea-table-container">
         <table>
           <thead>

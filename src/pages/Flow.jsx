@@ -13,6 +13,7 @@ import {
   useReactFlow,
  } from '@xyflow/react';
 
+// Link element to switch between webpages efficiently
 import { Link } from "react-router-dom";
 
 // Import styling
@@ -168,7 +169,7 @@ function Flow({socket, response}) {
       // Define payload
       const payload = {
         comType: "saveFlow",
-        flow,
+        flow: flow,
       }
 
       // Send payload via WebSocket
@@ -281,7 +282,7 @@ function Flow({socket, response}) {
           <Panel position='top-right'>
             <button className='panel-button' onClick={onSave}>Save</button>
             <button className='panel-button' onClick={onRestore}>Restore</button>
-            <Link to="/fmea-table" className="table-link"></Link>
+            <Link to="/fmea-table" className="table-link">Table</Link>
           </Panel>
         </ReactFlow>
         <Chatbox response={response}/>

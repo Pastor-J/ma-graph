@@ -51,11 +51,11 @@ function App() {
 
       switch(comType) {
         case "analysisResponse":
-          setResponse(JSON.parse(event.data));
+          setResponse(parsedData);
           break;
 
         case "faultsUpdate":
-          console.log("success!");
+          console.log("Request update of faults in database");
           break;
 
         case "faultsResponse": {
@@ -76,8 +76,13 @@ function App() {
           break;
         }
 
-        case "restoreResponse":
+        case "restoreResponse": {
+          // TODO: MongoDB -> localstorage -> APP. Bit confusing I think
+          const flow = parsedData["flow"];
+          localStorage.setItem('flow', JSON.stringify(flow));
+          console.log("Set local storage with most recent flow!");
           break;
+        }
       }
     };
 

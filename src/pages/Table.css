@@ -12,6 +12,12 @@
   /* Align save button top right */
   position: absolute;
   top: 20px;
+  right: 80px;
+}
+
+.flow-link-button {
+  position: absolute;
+  top: 28px;
   right: 20px;
 }
 

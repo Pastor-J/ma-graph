@@ -118,7 +118,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     print("INFO: Fault request successfull!")
 
                 case "updateFaults":
-                    
+                    # Get faults
                     updated_faults = message["faults"]
 
                     # Access faults
@@ -148,14 +148,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json(payload)
 
                 case "requestFlow":
-                    print("Requested Flow")
-
-                    await websocket.send_json("test")
-
-                case "saveFlow":
-                    # Access flow collection
+                    # Open flow collection
                     flow_col = app.db["flows"]
-                    
+
                     # Get last entry
                     last_flow = flow_col.find().sort('_id', -1).limit(1)
                     json_flow = dumps(last_flow[0])
@@ -165,12 +160,25 @@ async def websocket_endpoint(websocket: WebSocket):
                     json_flow = filter(lambda item: item[0] not in {'_id'}, json_flow.items())
                     json_flow = dict(json_flow)
 
+                    # Define payload
                     payload = {
-                        "comType": "flow",
+                        "comType": "restoreResponse",
                         "flow": json_flow,
                     }
 
                     await websocket.send_json(payload)
+
+                case "saveFlow":
+                    # Access flow collection
+                    flow_col = app.db["flows"] 
+
+                    # Get flow from message
+                    flow = message["flow"]
+
+                    # Insert flow into flow collection
+                    flow_col.insert_one(flow)
+
+                    await websocket.send_json("[INFO] Saved flow to database")
 
     except Exception as e:
         print(f"Error: {e}")
