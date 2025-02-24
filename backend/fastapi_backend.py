@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from analysis import simple_analysis, cot_analysis
 import json
 from bson.json_util import dumps
+from bson import ObjectId 
 from contextlib import asynccontextmanager
 
 # MongoDB
@@ -44,14 +45,14 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             # Receive message and extract communication type
             message = await websocket.receive_text()
-            flow_data = json.loads(message)
-            com_type = flow_data["comType"]
+            message = json.loads(message)
+            com_type = message["comType"]
       
             # Perform actions based on communication type
             match com_type:
                 case "requestAnalysis":
                     # Process data
-                    analysis = cot_analysis(flow_data)
+                    analysis = cot_analysis(message)
 
                     # Add communication type to result
                     analysis["comType"] = "analysisResponse"
@@ -60,9 +61,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json(analysis)
 
                 case "acceptFault":
-                    print(flow_data)
+                    print(message)
                     # Get accepted fault
-                    accepted_fault = flow_data["matchingNode"]
+                    accepted_fault = message["matchingNode"]
 
                     # Filter out all key-value pairs except for id, data
                     accepted_fault = filter(lambda item: item[0] in {'id', 'data'}, accepted_fault.items())
@@ -117,9 +118,31 @@ async def websocket_endpoint(websocket: WebSocket):
                     print("INFO: Fault request successfull!")
 
                 case "updateFaults":
+                    
+                    updated_faults = message["faults"]
+
+                    # Access faults
+                    fault_col = app.db["faults"]
+                    
+                    bulk_operations = [
+                        pymongo.UpdateOne(
+                            {'_id': ObjectId(fault['_id'])},  # Convert string to ObjectId here
+                            {'$set': {                        # Convert ID in the update document too
+                                **fault,
+                                '_id': ObjectId(fault['_id'])
+                            }},
+                            upsert=True
+                        ) 
+                        for fault in updated_faults
+                    ]
+
+                    fault_col.bulk_write(bulk_operations)
+
+                    for fault in fault_col.find():
+                        print(fault)
 
                     payload = {
-                        "comType": "faultsUpdate"
+                        "comType": "faultsUpdate",
                     }
 
                     await websocket.send_json(payload)
