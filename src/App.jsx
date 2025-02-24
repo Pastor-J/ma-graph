@@ -13,21 +13,6 @@ import FMEATable from "./pages/Table";
 
 const SOCKET_URL = 'ws://127.0.0.1:5000/ws';
 
-// const initialFaults = [{
-//   _id: "123",
-//   nodeID: "1",
-//   possibleFault: "Leackage",
-//   possibleConsequence: "Wetness", 
-//   possibleCause: "Brittle Material"
-// }, {
-//   _id: "456",
-//   nodeID: "2",
-//   possibleFault: "Blank wire",
-//   possibleConsequence: "Electrocution",
-//   possibleCause: "Brittle Insolation"
-// }]
-
-
 function App() {
   // Websocket 
   const socket = useRef(null); // Use ref instead of state because socket remains constant
@@ -72,7 +57,18 @@ function App() {
         case "faultsResponse": {
           // Get faults from parsedData
           const faults = JSON.parse(parsedData.faults);
-          setFaults(faults);
+
+          // Fix representation of _id. 
+          // TODO: Why not format it correctly when sending the data?
+          const faultsFormatted = faults.map((fault) => {
+            return {
+              ...fault,
+              _id: fault._id.$oid.toString(),
+            };
+          });
+          
+          // Update faults-state
+          setFaults(faultsFormatted);
           break;
         }
 

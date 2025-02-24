@@ -71,7 +71,7 @@ function FMEATable({ faults, onFaultUpdate, socket}) {
     rows.push(
       <FaultRow 
         fault={fault} 
-        key={JSON.stringify(fault._id)}
+        key={fault._id} // The key needs to provided, so React can render the table efficiently
         onFaultChange={handleFaultChange}/> 
     )
   });
