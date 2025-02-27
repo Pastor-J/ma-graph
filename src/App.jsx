@@ -23,9 +23,11 @@ function App() {
 
   // Websocket handling
   useEffect(() => {
+    // Establish WebSocket connection
     const ws = new WebSocket(SOCKET_URL);
     socket.current = ws;
 
+    // Define behavior when connection is opened
     ws.onopen = () => {
       console.log('WebSocket connection established');
 
@@ -44,6 +46,7 @@ function App() {
       console.log('Requested flow via Websocket Connection');
     };
 
+    // Define behaviour when new message is received from backends
     ws.onmessage = (event) => {
       // Get response from backend
       const parsedData = JSON.parse(event.data)
@@ -73,6 +76,8 @@ function App() {
           
           // Update faults-state
           setFaults(faultsFormatted);
+
+          console.log("Sucessfully updated faults!"); 
           break;
         }
 
@@ -86,10 +91,12 @@ function App() {
       }
     };
 
+    // Define behaviour in case of an error
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
 
+    // Define behaviour when connection is closed
     ws.onclose = () => {
       console.log('WebSocket connection closed');
     };
@@ -102,12 +109,13 @@ function App() {
     };
   }, []);
 
+  // Function handling user inputs in FMEA-Table
   const handleFaultUpdate = (updatedFault) => {
     setFaults(faults.map(fault => 
       fault._id === updatedFault._id ? updatedFault : fault
     ));
-    // Here you could also send the update to your backend
   };  
+  
 
   return (
     <div className="App">
@@ -116,7 +124,10 @@ function App() {
             index
             element={
               <ReactFlowProvider>
-                <Flow socket={socket} response={response}/>
+                <Flow 
+                  socket={socket} 
+                  response={response}
+                />
               </ReactFlowProvider>
             }
           />

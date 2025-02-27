@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { 
   useState, 
   useCallback, 
@@ -12,6 +13,9 @@ import {
   Panel,
   useReactFlow,
  } from '@xyflow/react';
+
+
+ import { NodeContext } from '../components/context';
 
 // Link element to switch between webpages efficiently
 import { Link } from "react-router-dom";
@@ -50,7 +54,7 @@ function Flow({socket, response}) {
   const getId = () => `${id++}`
 
   // Function for handling user inputs
-  const onChange = useCallback((event, field, nodeID) => {
+  const onChange = (event, field, nodeID) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id !== nodeID) {
@@ -70,7 +74,7 @@ function Flow({socket, response}) {
         };
       })
     );
-  }, [setNodes]);
+  };
 
   // Insert initial system node
   useEffect(() => {
@@ -81,7 +85,7 @@ function Flow({socket, response}) {
         data: { identifier: '', onChange: onChange } 
       }
     ]); 
-  }, [onChange, setNodes]);
+  }, []);
   
   // Insert Information provided by backend into GUI
   useEffect(() => {
@@ -104,9 +108,9 @@ function Flow({socket, response}) {
   }, [response, setNodes]);
   
   // Function handling for "Analyze" Button
-  const onAnalyze = useCallback((nodeID) => {
+  const onAnalyze = (nodeID) => {
     // Check websocket connection
-    if (!socket.curennt || socket.current.readyState !== WebSocket.OPEN) {
+    if (!socket.current || socket.current.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
     }
@@ -125,15 +129,15 @@ function Flow({socket, response}) {
     } else {
       console.error('WebSocket is not connected');
     }
-  }, [rfInstance, socket]);
+  };
 
-  const onAccept = useCallback((id) => {
+  const onAccept = (id) => {
     // Check socket connection
     if (!socket.current || socket.current.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
     }
-
+    
     // Get node with matching id
     const matchingNode = nodes.filter((node) => node.id === id)[0]
   
@@ -145,7 +149,7 @@ function Flow({socket, response}) {
 
     socket.current.send(JSON.stringify(payload))
     console.log('Accepted fault send via WebSocket')
-  }, [nodes, socket])
+  };
 
   // Function handling connections between nodes
   const onConnect = useCallback(
@@ -181,31 +185,22 @@ function Flow({socket, response}) {
   }, [socket, rfInstance])
 
   // Function allowing flow to be restored from local storage
-  const onRestore = useCallback(() => {
-    const restoreFlow = () => {
-      const flow = JSON.parse(localStorage.getItem('flow'));
+  const onRestore = () => {
+    const flow = JSON.parse(localStorage.getItem('flow'));
 
-      // Restore the flow. Make sure to add onChange function to data object, as functions cannot be saved to local storage
-      if (flow) {
-        setNodes(
-          (flow.nodes || []).map(node => ({
-            ...node,
-            data: {
-              ...node.data,
-              onChange: onChange,  // Reassign function reference
-              onAnalyze: node.type === 'componentNode' ? onAnalyze : undefined,
-              onAccept: node.type === 'componentNode' ? onAccept : undefined
-            },
-          }))
-        );
-        setEdges(flow.edges || []);
-      }
-    };
- 
-    restoreFlow();   
-
-  }, [setNodes, setEdges, onChange, onAnalyze, onAccept]);
-
+    // Restore the flow. Make sure to add onChange function to data object, as functions cannot be saved to local storage
+    if (flow) {
+      setNodes(
+        (flow.nodes || []).map(node => ({
+          ...node,
+          data: {
+            ...node.data, // TODO: Does this need to be here?
+          },
+        }))
+      );
+      setEdges(flow.edges || []);
+    }
+  }; 
 
   // Function allowing to add new nodes from the right handle of system and assembly node
   const onConnectEnd = useCallback(
@@ -240,13 +235,8 @@ function Flow({socket, response}) {
           }),
           data: {
             label: `node${id}`, 
-            onChange: onChange,
-            onAnalyze: targetType === 'componentNode' ? onAnalyze : undefined,
-            onAccept: targetType === 'componentNode' ? onAccept : undefined
           }
         }
-
-        console.log(newNode);
         
         // Update nodes state
         setNodes((nds) => {
@@ -266,14 +256,16 @@ function Flow({socket, response}) {
     onRestore();
   }, [])
 
+
   return (
-    <div style={{ width: '100vw', height: '100vh'}}>      
+    // Context provider is important to provide nodes with functions. See context.jsx for more info
+    <NodeContext.Provider value={[onAccept, onAnalyze, onChange]}>
+      <div style={{ width: '100vw', height: '100vh'}}>
         <ReactFlow 
           nodes={nodes} 
           edges={edges} 
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          // onNodeClick={onNodeClick}
           onInit={setRfInstance}
           nodeTypes={nodeTypes}
           onConnect={onConnect}
@@ -286,7 +278,8 @@ function Flow({socket, response}) {
           </Panel>
         </ReactFlow>
         <Chatbox response={response}/>
-    </div>
+      </div>
+    </NodeContext.Provider>
   );
 };
 

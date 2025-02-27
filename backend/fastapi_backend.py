@@ -46,11 +46,13 @@ async def websocket_endpoint(websocket: WebSocket):
             # Receive message and extract communication type
             message = await websocket.receive_text()
             message = json.loads(message)
+            print(message)
             com_type = message["comType"]
       
             # Perform actions based on communication type
             match com_type:
-                case "requestAnalysis":
+                # Frontend requests analysis from backend
+                case "requestAnalysis": 
                     # Process data
                     analysis = cot_analysis(message)
 
@@ -60,8 +62,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Send result of analysis back to frontend
                     await websocket.send_json(analysis)
 
+                # User accepts fault in frontend, faults need to be updated in database
                 case "acceptFault":
-                    print(message)
                     # Get accepted fault
                     accepted_fault = message["matchingNode"]
 
@@ -138,7 +140,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     ]
 
                     # Update collection
-                    fault_col.bulk_write(bulk_operations)
+                    await fault_col.bulk_write(bulk_operations)
 
                     # Define payload
                     payload = {

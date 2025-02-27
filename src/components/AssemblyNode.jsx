@@ -1,8 +1,12 @@
 import { Handle, Position } from '@xyflow/react'
 import './AssemblyNode.css'
+import { useContext } from 'react';
+import { NodeContext } from './context';
 
 // Among other args id, data can be accessed here. See ReactFlow documentation "NodeProps" for more info
 function AssemblyNode({ id, data }) {
+  // Get important function for interactions from NodeContext
+  const [, , onChange] = useContext(NodeContext); 
 
   return (
     <>
@@ -12,14 +16,14 @@ function AssemblyNode({ id, data }) {
         <input
           className="identifier-input-field"
           value={data.identifier || ''}
-          onChange={(event) => data.onChange(event, "identifier", id)}
+          onChange={(event) => onChange(event, "identifier", id)}
           placeholder='Assembly Component'
         />
 
         <input 
           className="function-input-field"
           value={data.func || ''}
-          onChange={(event) => data.onChange(event, "func", id)}
+          onChange={(event) => onChange(event, "func", id)}
           placeholder='Function'
         />
 
