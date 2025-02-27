@@ -8,17 +8,47 @@
   height: 100vh;
 }
 
-.table-save-button {
-  /* Align save button top right */
-  position: absolute;
-  top: 20px;
-  right: 80px;
+.flow-link-button {
+  /* position: absolute; */
+  margin-left: 5px;
+  color: white;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+.flow-link-button:hover {
+  border-color: #646cff;
+}
+.flow-link-button:focus,
+.flow-link-button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
-.flow-link-button {
-  position: absolute;
-  top: 28px;
-  right: 20px;
+.table-save-button {
+  /* position: absolute; */
+  margin-left: 5px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+.table-save-button:hover {
+  border-color: #646cff;
+}
+.table-save-button:focus,
+.table-save-button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
 .fmea-table-container th,

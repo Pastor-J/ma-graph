@@ -48,10 +48,22 @@
 }
 
 .table-link {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: white;
-  border-radius: 4px;
-  text-decoration: none;
-  /* Add other styles as needed */
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  color: white;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  margin-left: 5px;
+}
+.table-link:hover {
+  border-color: #646cff;
+}
+.table-link:focus,
+.table-link:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
