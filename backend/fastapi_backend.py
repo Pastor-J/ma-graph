@@ -1,10 +1,20 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from analysis import simple_analysis, cot_analysis
+from analysis import cot_analysis
 import json
 from bson.json_util import dumps
 from bson import ObjectId 
 from contextlib import asynccontextmanager
+import logging
+
+# Setup logger
+# Important to get formated outputs in terminal
+logging.basicConfig(
+  level=logging.INFO,
+  format="%(name)s - %(levelname)s: %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 # MongoDB
 import pymongo
@@ -17,14 +27,14 @@ async def lifespan(app: FastAPI):
     app.client = pymongo.MongoClient("mongodb://localhost:27017/")
     app.db = app.client["fmea"]
 
-    print("INFO: Connected to MongoDB")
+    logger.info("Connected to MongoDB")
 
     yield
     
     # Disconnect from mongodb when connection is closed
     app.client.close() # TODO: Recheck if correct
 
-    print("INFO: Disconnected from MongoDB")
+    logger.info("Disconnected from MongoDB")
   
 app = FastAPI(lifespan=lifespan)
 
@@ -46,7 +56,6 @@ async def websocket_endpoint(websocket: WebSocket):
             # Receive message and extract communication type
             message = await websocket.receive_text()
             message = json.loads(message)
-            print(message)
             com_type = message["comType"]
       
             # Perform actions based on communication type
@@ -66,7 +75,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 case "acceptFault":
                     # Get accepted fault
                     accepted_fault = message["matchingNode"]
-
+                    # TODO: onAccept function does not properly write to the data object 
                     # Filter out all key-value pairs except for id, data
                     accepted_fault = filter(lambda item: item[0] in {'id', 'data'}, accepted_fault.items())
                     accepted_fault = dict(accepted_fault)
@@ -99,7 +108,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json(payload)
 
                 case "requestFaults":
-                    print("INFO: User requests faults")
+                    logger.info("User requests faults")
 
                     # Access faults
                     fault_col = app.db["faults"]
@@ -117,7 +126,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Send data to frontend
                     await websocket.send_json(payload)
 
-                    print("INFO: Fault request successfull!")
+                    logger.info("Fault request successfull!")
 
                 case "updateFaults":
                     # Get faults
@@ -180,10 +189,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Insert flow into flow collection
                     flow_col.insert_one(flow)
 
-                    await websocket.send_json("[INFO] Saved flow to database")
+                    await websocket.send_json("Saved flow to database")
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         await websocket.close()
 
 if __name__ == "__main__":

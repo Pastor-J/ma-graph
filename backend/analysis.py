@@ -1,100 +1,70 @@
-import time
-from langchain_ollama import OllamaLLM
-import json
-import os
-import pandas as pd
-
-# If a dataframe exist: read it. If not: create it.
-if os.path.exists('./data'):
-  df = pd.read_pickle('./data')
-else:
-  df = pd.DataFrame(
-    {
-      "nodeID": [],
-      "possibleFault": [],
-      # "possible_cause": [],
-      "possibleConsequences": [],
-      "reasoning": []
-    }
-  )
-
-def get_predicted(seedId):
-  """
-    Returns faults which have already been predicted for every node.
-
-  """
-
-  assert type(int(seedId)) == int, "seedID should be a string containing an int"
-
-  # Get predicted faults for the nodeId
-  # NOTE: If node_id does not exist in df, this will NOT throw an error
-  predicted = df[df["nodeID"] == seedId]
-  predicted = set(predicted["possibleFault"])
-
-  # Handle case in which no fault has been predicted yet
-  if len(predicted) == 0:
-    return "At the moment this set is still empty. As no faults have been predicted yet."
-  
-  return predicted
-
-llm = OllamaLLM(model="llama3.1:8b")
-predicted = []
-
-def simple_analysis(flow_data):
-  seedId = flow_data["seedId"]
-
-  if not seedId:
-    return "Please select a node for analysis."
-  
-  flow = flow_data["flow"]
-  nodes = flow["nodes"]
-  edges = flow["edges"]
-
-  extracted_nodes_info = []
-
-  for node in nodes:
-    essential_node_info = {
-      'id': node['id'],
-      'type': node['type'],
-      'data': node['data']
-    }
-
-    extracted_nodes_info.append(essential_node_info)
-
-  print(extracted_nodes_info)
-  print(edges)
-
-  query = f"""
-    You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Please analyse this graph with nodes: {extracted_nodes_info} and edges: {edges}. The graph has three hierarchie levels indicated by the 'type' attribute with 'systemNode' being the least detailed, 'assemblyNode' being more detailed and 'componentNode' being most detailed. Return a possible fault for node with id {seedId}. Keep it as short as possible. Your ouput string should be maximum 5 words long. Please make sure not to make it any longer. Also make sure not to predict faults which are already included in {predicted}.
-  """
-  # TODO: Use Reasoning of LLM to fine tune the query
-
-  # for chunk in llm.stream(query):
-  #   print(chunk, end="", flush=True)
-  # print("\n")
-  result = llm.invoke(query)
-
-  predicted.append(result)
-
-  return result
-
 from langchain_ollama import ChatOllama
-import json
-llm_json_mode = ChatOllama(model="deepseek-r1:8b", temperature=0, format="json")
-llm = ChatOllama(model="deepseek-r1:1.5b", temperature=0.4)
+from pymongo import MongoClient
+from pydantic import BaseModel, ValidationError
+import logging
+import time
 
+# Setup logger
+# Important to get formated outputs in terminal
+logging.basicConfig(
+  level=logging.INFO,
+  format="%(name)s - %(levelname)s: %(message)s",
+  # filename="log.log",
+  # filemode="w",
+)
+
+logger = logging.getLogger(__name__)
+
+# Setup Pydantic
+# Important to verify if LLM output has expected format
+class Analysis(BaseModel):
+  nodeID: str
+  possibleFault: str
+  possibleConsequences: str
+  reasoning: str 
+
+# Initialize LLM
+# llm = ChatOllama(model="deepseek-r1:7b", temperature=0.1) # DeepSeek-R1-Distill-Qwen-7B
+llm = ChatOllama(model="deepseek-r1:8b", temperature=0.1) # DeepSeek-R1-Distill-Llama-8B
+
+# Initialize connection to MongoDB database
+# Important to get faults which have already been predicted
+uri = "mongodb://localhost:27017/"
+client = MongoClient(uri)
+
+try:
+    client.admin.command("ping")
+    print("Connected successfully")
+
+except Exception as e:
+    raise Exception(
+        "The following error occurred: ", e)
+
+fmea = client["fmea"]
+fault_col = fmea["faults"]
+
+# CoT: Chain of Thought
 def cot_analysis(flow_data):
-  global df
-  seedId, system_nodes, assembly_nodes, component_nodes = extract_node_data(flow_data=flow_data)
+  # Extract flow information
+  seedId, system_nodes, assembly_nodes, component_nodes, edges = extract_node_data(flow_data=flow_data)
 
-  predicted = get_predicted(seedId=seedId) 
+  # Find all entries in databse with matching node id
+  cursor = fault_col.find({"nodeID": str(seedId)})
+
+  # Extract all faults which have already been predicted for the given node
+  predicted = set()
+
+  for element in cursor:
+    fault = element["fault"]
+    predicted.add(fault)
 
   p = f"""
     You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possbile MECHANICAL fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system.
 
     For the possible fault: 
-      Please return a short and concise sentence describing that fault and mark it with "Possible Fault: "
-      Furthermore please return a short and concise sentence describing the effect of that fault and mark it with "Consequences: "
+      Please return a SHORT and CONCISE sentence describing that fault and mark it with "Possible Fault: ".
+      Furthermore please return a short and concise sentence describing the effect of that fault and mark it with "Consequences: ".
+      Make sure there are only THREE paragraphs in total, marked by: <think></think>, Possible Fault and Consequences.
 
     Make sure to predict faults which are very different from those described in the following set: {predicted}. This is VERY important!
     
@@ -108,9 +78,71 @@ def cot_analysis(flow_data):
     
   """
 
-  msg = llm.invoke(p)
-  content = msg.content
+  # Try the analysis three times
+  for i in range(3):
+    try: 
+      logger.info(f"Trying analysis: {i+1}/3")
 
+      # Get prediction from LLM 
+      start = time.time()
+      msg = llm.invoke(p)
+      end = time.time()
+      logger.info(f"Prediction took: {(end - start):.2f} s")
+      
+      # Format response
+      response = msg.content
+      analysis = format_response(response, seedId)
+
+      # Check response, if ValidationError, the analysis the prediction will start again. Max 3 times.
+      analysis = Analysis(**analysis)
+      logger.info("Analysis successfull!")
+      break
+
+    except ValidationError as e:
+      logger.exception(f"Description: {e}. Restarting process: {i+1}/3")
+      continue
+
+# Use DeepSeekR1 to check wether the reasoning path are correct and use that to train the model
+# Force the LLM to focus on First Principle
+# For potential RAG focus on the limits of the components
+# Try marco o1?
+
+def extract_node_data(flow_data):
+  seedId = flow_data["seedId"]
+
+  if not seedId:
+    return "Please select a node for analysis."
+  
+  flow = flow_data["flow"]
+  nodes = flow["nodes"]
+  edges = flow["edges"]
+
+  system_nodes = []
+  assembly_nodes = []
+  component_nodes = []
+
+  for node in nodes:
+    essential_node_info = {
+      'id': node['id'],
+      'type': node['type'],
+      'data': node['data']
+    }
+    
+    if essential_node_info["type"] == "systemNode":
+      system_nodes.append(essential_node_info)
+    elif essential_node_info["type"] == "assemblyNode":
+      assembly_nodes.append(essential_node_info)
+    elif essential_node_info["type"] == "componentNode":
+      component_nodes.append(essential_node_info)
+    else:
+      logger.error("[ERROR] Node type not recognized.")
+
+  return seedId, system_nodes, assembly_nodes, component_nodes, edges
+
+
+def format_response(content, seedId):
+
+  print(content)
   start_think = "<think>"
   end_think = "</think>"
 
@@ -123,87 +155,21 @@ def cot_analysis(flow_data):
     summary = content[idx_end_think + len(end_think):]
 
     for element in summary.split("\n"):
-      if "Possible Fault" in element:
+      if "fault" in element.lower():
         possible_fault = element.split(": ")[-1]
-      elif "Consequences" in element:
-        consequences = element.split(": ")[-1]
-
-    analysis = {
-      "nodeID": [seedId],
-      "possibleFault": [possible_fault],
-      "possibleConsequences": [consequences],
-      "reasoning": [reasoning]  
-    }
-
-    # Add new entries to dataframe and store it on disc
-    new_row = pd.DataFrame(analysis)
-    df = pd.concat([df, new_row], ignore_index=True)
-    df = df.drop_duplicates() # Make sure there are no duplicates
-    df.to_pickle("data")
-
-    return analysis
-  
-  else:
-    return "[ERROR] LLM output does not have expected format!"
-
-
-
-# cot_analysis()
-
-# We need to store mistakes for each node
-# Use DeepSeekR1 to check wether the reasoning path are correct and use that to train the model
-# Force the LLM to focus on First Principle
-# For potential RAG focus on the limits of the components
-# Try marco o1?
-
-
-def extract_node_data(flow_data):
-    seedId = flow_data["seedId"]
-
-    if not seedId:
-      return "Please select a node for analysis."
-    
-    flow = flow_data["flow"]
-    nodes = flow["nodes"]
-    edges = flow["edges"]
-
-    system_nodes = []
-    assembly_nodes = []
-    component_nodes = []
-
-    for node in nodes:
-      essential_node_info = {
-        'id': node['id'],
-        'type': node['type'],
-        'data': node['data']
-      }
-      
-      if essential_node_info["type"] == "systemNode":
-        system_nodes.append(essential_node_info)
-      elif essential_node_info["type"] == "assemblyNode":
-        assembly_nodes.append(essential_node_info)
-      elif essential_node_info["type"] == "componentNode":
-        component_nodes.append(essential_node_info)
       else:
-        print("[ERROR] Node type not recognized.")
+        possible_fault = False # Assign dummy value, so program does not crash and allows rerun
 
-    return seedId, system_nodes, assembly_nodes, component_nodes
+      if "consequences" in element.lower():
+        consequences = element.split(": ")[-1]
+      else:
+        consequences = False # Assign dummy value, so program does not crash and allows rerun
 
+  analysis = {
+    "nodeID": seedId,
+    "possibleFault": possible_fault,
+    "possibleConsequences": consequences,
+    "reasoning": reasoning  
+  }
 
-
-edges = [{'id': 'e1-2', 'source': '1', 'target': '2'}, {'id': '2', 'source': '1', 'target': '2'}, {'id': '3', 'source': '1', 'target': '3'}, {'id': '4', 'source': '2', 'target': '4'}, {'id': '5', 'source': '1', 'target': '5'}, {'id': '6', 'source': '1', 'target': '6'}]
-
-system_nodes = [
-  {'id': '1', 'type': 'systemNode', 'data': {'label': 'node1', 'identifier': 'Cooling System'}}
-  ]
-
-assembly_nodes = [
-  {'id': '2', 'type': 'assemblyNode', 'data': {'label': 'node2', 'identifier': 'Radiator', 'func': 'Cool down water'}}, 
-  {'id': '3', 'type': 'assemblyNode', 'data': {'label': 'node3', 'identifier': 'Hose', 'func': 'Distribute water between engine block and radiator'}},
-  {'id': '5', 'type': 'assemblyNode', 'data': {'label': 'node5', 'identifier': 'Water pump', 'func': 'Generate water flow'}}, 
-  {'id': '6', 'type': 'assemblyNode', 'data': {'label': 'node6', 'identifier': 'Thermostat', 'func': 'Regulates if water flows through radiator or not. Thereby ensuring the water temperature is in the optimal range.'}}
-  ]
-
-component_nodes = [
-  {'id': '4', 'type': 'componentNode', 'data': {'label': 'node4', 'identifier': 'Blower fan', 'func': 'Create air flow for improved heat exchange'}}
-  ]
+  return analysis

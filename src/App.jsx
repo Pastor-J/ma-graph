@@ -49,12 +49,13 @@ function App() {
     // Define behaviour when new message is received from backends
     ws.onmessage = (event) => {
       // Get response from backend
-      const parsedData = JSON.parse(event.data)
+      const parsedData = JSON.parse(event.data);
       const comType = parsedData["comType"];
 
       switch(comType) {
         case "analysisResponse":
           setResponse(parsedData);
+          console.log(parsedData);
           break;
 
         case "faultsUpdate":
