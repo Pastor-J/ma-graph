@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Setup Pydantic
-# Important to verify if LLM output has expected format
+# Important to verify if LLM output comforms to expected format
 class Analysis(BaseModel):
   nodeID: str
   possibleFault: str
@@ -52,7 +52,7 @@ def cot_analysis(flow_data):
   cursor = fault_col.find({"nodeID": str(seedId)})
 
   # Extract all faults which have already been predicted for the given node
-  predicted = set()
+  predicted = set() # Warning: Possible commands could be injected here!
 
   for element in cursor:
     fault = element["fault"]
@@ -64,7 +64,7 @@ def cot_analysis(flow_data):
     For the possible fault: 
       Please return a SHORT and CONCISE sentence describing that fault and mark it with "Possible Fault: ".
       Furthermore please return a short and concise sentence describing the effect of that fault and mark it with "Consequences: ".
-      Make sure there are only THREE paragraphs in total, marked by: <think></think>, Possible Fault and Consequences.
+      Make sure there are only THREE paragraphs in total, marked by: "<think></think>", "Possible Fault: " and "Consequences: ".
 
     Make sure to predict faults which are very different from those described in the following set: {predicted}. This is VERY important!
     
@@ -75,10 +75,9 @@ def cot_analysis(flow_data):
       
       These nodes are connected via edges which are defined via the ids of the source and target nodes.
       Edges: {edges}
-    
   """
 
-  # Try the analysis three times
+  # Try the analysis for a maximum of three times
   for i in range(3):
     try: 
       logger.info(f"Trying analysis: {i+1}/3")
@@ -94,9 +93,9 @@ def cot_analysis(flow_data):
       analysis = format_response(response, seedId)
 
       # Check response, if ValidationError, the analysis the prediction will start again. Max 3 times.
-      analysis = Analysis(**analysis)
+      Analysis(**analysis)
       logger.info("Analysis successfull!")
-      break
+      return analysis
 
     except ValidationError as e:
       logger.exception(f"Description: {e}. Restarting process: {i+1}/3")
@@ -141,8 +140,6 @@ def extract_node_data(flow_data):
 
 
 def format_response(content, seedId):
-
-  print(content)
   start_think = "<think>"
   end_think = "</think>"
 
@@ -155,15 +152,10 @@ def format_response(content, seedId):
     summary = content[idx_end_think + len(end_think):]
 
     for element in summary.split("\n"):
-      if "fault" in element.lower():
+      if "Possible Fault: " in element:
         possible_fault = element.split(": ")[-1]
-      else:
-        possible_fault = False # Assign dummy value, so program does not crash and allows rerun
-
-      if "consequences" in element.lower():
+      elif "Consequences: " in element:
         consequences = element.split(": ")[-1]
-      else:
-        consequences = False # Assign dummy value, so program does not crash and allows rerun
 
   analysis = {
     "nodeID": seedId,
