@@ -9,8 +9,6 @@ import time
 logging.basicConfig(
   level=logging.INFO,
   format="%(name)s - %(levelname)s: %(message)s",
-  # filename="log.log",
-  # filemode="w",
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +32,7 @@ client = MongoClient(uri)
 
 try:
     client.admin.command("ping")
-    print("Connected successfully")
+    logger.info("Connected successfully")
 
 except Exception as e:
     raise Exception(
@@ -59,7 +57,7 @@ def cot_analysis(flow_data):
     predicted.add(fault)
 
   p = f"""
-    You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possbile MECHANICAL fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system.
+    You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possbile fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system. Make sure to thoroughly understand the component nodes role within the system.
 
     For the possible fault: 
       Please return a SHORT and CONCISE sentence describing that fault and mark it with <fault></fault>

@@ -6,6 +6,7 @@ from bson.json_util import dumps
 from bson import ObjectId 
 from contextlib import asynccontextmanager
 import logging
+import pymongo
 
 # Setup logger
 # Important to get formated outputs in terminal
@@ -15,10 +16,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-# MongoDB
-import pymongo
-from motor.motor_asyncio import AsyncIOMotorClient 
 
 # Handle connection to mongodb database
 @asynccontextmanager
@@ -39,6 +36,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Add CORS middleware
+# Important to allow communication between localhost and computer
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Adjust this in production
@@ -61,7 +59,10 @@ async def websocket_endpoint(websocket: WebSocket):
             # Perform actions based on communication type
             match com_type:
                 # Frontend requests analysis from backend
+                # Analyse data and send extracted info back to frontend
                 case "requestAnalysis": 
+                    logger.info("User requests analysis")
+
                     # Process data
                     analysis = cot_analysis(message)
 
@@ -71,11 +72,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Send result of analysis back to frontend
                     await websocket.send_json(analysis)
 
-                # User accepts fault in frontend, faults need to be updated in database
+                    logger.info("Analysis sent to frontend")
+
+                # User accepts fault in frontend, faults need to be added in the database
                 case "acceptFault":
+                    logger.info("User accepted/added new fault")
+
                     # Get accepted fault
                     accepted_fault = message["matchingNode"]
-                    # TODO: onAccept function does not properly write to the data object 
+   
                     # Filter out all key-value pairs except for id, data
                     accepted_fault = filter(lambda item: item[0] in {'id', 'data'}, accepted_fault.items())
                     accepted_fault = dict(accepted_fault)
@@ -107,6 +112,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     await websocket.send_json(payload)
 
+                    logger.info("New fault successfully added to database")
+
                 case "requestFaults":
                     logger.info("User requests faults")
 
@@ -129,6 +136,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     logger.info("Fault request successfull!")
 
                 case "updateFaults":
+                    logger.info("User requests update of faults as they have been changed in the Table (frontend)")
+
                     # Get faults
                     updated_faults = message["faults"]
 
@@ -158,7 +167,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     await websocket.send_json(payload)
 
+                    logger.info("Updated faults as they have changed in the Table (frontend)")
+
                 case "requestFlow":
+                    logger.info("User requests most recent flow")
+
                     # Open flow collection
                     flow_col = app.db["flows"]
 
@@ -179,7 +192,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     await websocket.send_json(payload)
 
+                    logger.info("Sent most recent flow to frontend")
+
                 case "saveFlow":
+                    logger.info("User requests to save current flow")
+
                     # Access flow collection
                     flow_col = app.db["flows"] 
 
@@ -190,6 +207,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     flow_col.insert_one(flow)
 
                     await websocket.send_json("Saved flow to database")
+
+                    logger.info("Saved flow to database")
 
     except Exception as e:
         logger.error(f"Error: {e}")
