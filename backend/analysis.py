@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class Analysis(BaseModel):
   nodeID: str
   possibleFault: str
-  possibleConsequences: str
+  possibleConsequence: str
   reasoning: str 
 
 # Initialize LLM
@@ -62,9 +62,9 @@ def cot_analysis(flow_data):
     You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possbile MECHANICAL fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system.
 
     For the possible fault: 
-      Please return a SHORT and CONCISE sentence describing that fault and mark it with "Possible Fault: ".
-      Furthermore please return a short and concise sentence describing the effect of that fault and mark it with "Consequences: ".
-      Make sure there are only THREE paragraphs in total, marked by: "<think></think>", "Possible Fault: " and "Consequences: ".
+      Please return a SHORT and CONCISE sentence describing that fault and mark it with <fault></fault>
+      Furthermore please return a SHORT and CONCISE sentence describing the consequence of that fault and mark it with <consequence></consequence>.
+      In the end I want ONLY TWO paragraphs marked by <fault></fault> and <consequence></consequence>.
 
     Make sure to predict faults which are very different from those described in the following set: {predicted}. This is VERY important!
     
@@ -91,7 +91,7 @@ def cot_analysis(flow_data):
       # Format response
       response = msg.content
       analysis = format_response(response, seedId)
-
+ 
       # Check response, if ValidationError, the analysis the prediction will start again. Max 3 times.
       Analysis(**analysis)
       logger.info("Analysis successfull!")
@@ -101,16 +101,11 @@ def cot_analysis(flow_data):
       logger.exception(f"Description: {e}. Restarting process: {i+1}/3")
       continue
 
-# Use DeepSeekR1 to check wether the reasoning path are correct and use that to train the model
-# Force the LLM to focus on First Principle
-# For potential RAG focus on the limits of the components
-# Try marco o1?
-
 def extract_node_data(flow_data):
   seedId = flow_data["seedId"]
 
   if not seedId:
-    return "Please select a node for analysis."
+    return logger.error("Please select a node for analysis.")
   
   flow = flow_data["flow"]
   nodes = flow["nodes"]
@@ -138,29 +133,36 @@ def extract_node_data(flow_data):
 
   return seedId, system_nodes, assembly_nodes, component_nodes, edges
 
-
 def format_response(content, seedId):
+  # Define identifiers delimiting the paragraphs
   start_think = "<think>"
   end_think = "</think>"
 
-  idx_start_think = content.find(start_think)
+  start_fault = "<fault>"
+  end_fault = "</fault>"
 
+  start_consequence = "<consequence>"
+  end_consequence = "</consequence>"
+
+  # Get indexes delimiting the contents of the paragraphs
+  idx_start_think = content.find(start_think)
   idx_end_think = content.find(end_think, idx_start_think + len(start_think))
 
-  if idx_start_think != -1 and idx_end_think != -1:
-    reasoning = content[idx_start_think + len(start_think):idx_end_think]
-    summary = content[idx_end_think + len(end_think):]
+  idx_start_fault = content.find(start_fault)
+  idx_end_fault = content.find(end_fault, idx_start_fault + len(start_fault))
 
-    for element in summary.split("\n"):
-      if "Possible Fault: " in element:
-        possible_fault = element.split(": ")[-1]
-      elif "Consequences: " in element:
-        consequences = element.split(": ")[-1]
+  idx_start_consequence = content.find(start_consequence)
+  idx_end_consequence = content.find(end_consequence, idx_start_consequence + len(start_consequence))
 
+  # Get content of paragraphs based on indexes
+  reasoning = content[idx_start_think + len(start_think):idx_end_think]
+  possible_fault = content[idx_start_fault + len(start_fault):idx_end_fault]
+  possible_consequence = content[idx_start_consequence + len(start_consequence):idx_end_consequence]
+  
   analysis = {
     "nodeID": seedId,
     "possibleFault": possible_fault,
-    "possibleConsequences": consequences,
+    "possibleConsequence": possible_consequence,
     "reasoning": reasoning  
   }
 

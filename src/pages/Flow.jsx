@@ -99,6 +99,8 @@ function Flow({socket, response}) {
             data: {
               ...node.data,
               fault: response.possibleFault,
+              possibleConsequence: response.possibleConsequence,
+              possibleCause: response.reasoning,
             }
           }
         }
