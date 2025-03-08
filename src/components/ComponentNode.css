@@ -1,6 +1,6 @@
 /* Node border if node is not selected */
 .react-flow__node-componentNode {
-  border: 2px solid rgb(15, 131, 154);
+  border: 2px solid #ff7700;
   border-radius: 10px;
 }
 

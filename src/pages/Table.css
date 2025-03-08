@@ -1,0 +1,80 @@
+.fmea-table-container {
+  /* Align table top center */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 75px;
+
+  height: 100vh;
+}
+
+.flow-link-button {
+  /* position: absolute; */
+  margin-left: 5px;
+  color: black;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #F9F9F9;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+.flow-link-button:hover {
+  border-color: #646cff;
+}
+.flow-link-button:focus,
+.flow-link-button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.table-save-button {
+  /* position: absolute; */
+  margin-left: 5px;
+  border-radius: 8px;
+  color: black;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #F9F9F9;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+.table-save-button:hover {
+  border-color: #646cff;
+}
+.table-save-button:focus,
+.table-save-button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.fmea-table-container th,
+.fmea-table-container td {
+  width: 25%;
+  padding: 8px;
+  /* border-bottom: 1px solid gray; */
+  /* border-left: 1px solid gray; */
+
+  /* Align top left*/
+  text-align: left;
+  vertical-align: top;
+}
+
+.title-row {
+  border-bottom: 1px solid gray;
+}
+
+.fmea-table-container table {
+  width: 65%;
+  table-layout: fixed; /* This ensures columns maintain their width */
+  border-collapse: collapse; /* Ensures there is only one border */
+}
+
+.fmea-table-input-box {
+  border: none;
+  width: 80%;
+}
