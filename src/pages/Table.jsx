@@ -26,28 +26,28 @@ function FaultRow({ fault, onFaultChange }) {
   return (
     <tr>
       <td>
-        <input 
+        <textarea 
           value={fault.nodeID}
           onChange={(change) => handleChange("nodeID", change.target.value)}
           className="fmea-table-input-box"
         />
       </td>
       <td>
-        <input
+        <textarea
           value={fault.fault}
           onChange={(change) => handleChange("fault", change.target.value)}
           className="fmea-table-input-box"
         />
       </td>
       <td>
-        <input 
+        <textarea
           value={fault.possibleConsequence || ''}
           onChange={(change) => handleChange("possibleConsequence", change.target.value)}
           className="fmea-table-input-box"
         />
       </td>
       <td>
-        <input 
+        <textarea 
           value={fault.possibleCause || ''}
           onChange={(change) => handleChange("possibleCause", change.target.value)}
           className="fmea-table-input-box"
