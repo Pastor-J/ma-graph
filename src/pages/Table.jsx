@@ -9,7 +9,7 @@ function TitleRow() {
       <th>ID</th>
       <th>Possible Fault</th>
       <th>Possible Consequence</th>
-      <th>Possible Cause</th>
+      <th>Reasoning</th>
     </tr>
   )
 }

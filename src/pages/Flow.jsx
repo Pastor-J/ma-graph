@@ -196,7 +196,7 @@ function Flow({socket, response}) {
         (flow.nodes || []).map(node => ({
           ...node,
           data: {
-            ...node.data, // TODO: Does this need to be here?
+            ...node.data,
           },
         }))
       );

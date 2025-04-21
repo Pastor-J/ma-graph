@@ -1,4 +1,4 @@
-// Import router to allow multiple webpages website
+// Import router to allow multiple webpages
 import { Routes, Route } from "react-router-dom";
 
 // Import react functionality

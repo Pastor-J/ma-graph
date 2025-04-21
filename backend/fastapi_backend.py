@@ -39,7 +39,7 @@ app = FastAPI(lifespan=lifespan)
 # Important to allow communication between localhost and computer
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -147,8 +147,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Define upsert operation
                     bulk_operations = [
                         pymongo.UpdateOne(
-                            {'_id': ObjectId(fault['_id'])},  # Convert string to ObjectId here
-                            {'$set': {                        # Convert ID in the update document too
+                            {'_id': ObjectId(fault['_id'])}, 
+                            {'$set': {                        
                                 **fault,
                                 '_id': ObjectId(fault['_id'])
                             }},

@@ -22,8 +22,8 @@ class Analysis(BaseModel):
   reasoning: str 
 
 # Initialize LLM
-# llm = ChatOllama(model="deepseek-r1:7b", temperature=0.1) # DeepSeek-R1-Distill-Qwen-7B
-llm = ChatOllama(model="deepseek-r1:8b", temperature=0.1) # DeepSeek-R1-Distill-Llama-8B
+llm = ChatOllama(model="deepseek-r1:7b", temperature=0.1) # DeepSeek-R1-Distill-Qwen-7B
+# llm = ChatOllama(model="deepseek-r1:8b", temperature=0.1) # DeepSeek-R1-Distill-Llama-8B
 
 # Initialize connection to MongoDB database
 # Important to get faults which have already been predicted
@@ -55,9 +55,9 @@ def cot_analysis(flow_data):
   for element in cursor:
     fault = element["fault"]
     predicted.add(fault)
-
+  # TODO: Add to prompt that faults are derived from functions
   p = f"""
-    You are an AI-Assitant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possbile fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system. Make sure to thoroughly understand the component nodes role within the system.
+    You are an AI-Assistant for Failure Mode and Effects Analysis with focus on Systems. Your goal is to find a possible fault from first principles perspective for the Component Node with id: {seedId} based on a graph which describes a system. Make sure to thoroughly understand the component nodes role within the system.
 
     For the possible fault: 
       Please return a SHORT and CONCISE sentence describing that fault and mark it with <fault></fault>
@@ -66,7 +66,7 @@ def cot_analysis(flow_data):
 
     Make sure to predict faults which are very different from those described in the following set: {predicted}. This is VERY important!
     
-    The system is discribed by a tree graph with three levels:
+    The system is described by a tree graph with three levels:
       Level 1 System Nodes: {system_nodes}
       Level 2 Assembly Nodes: {assembly_nodes}
       Level 3 Component Nodes: {component_nodes}
@@ -90,7 +90,7 @@ def cot_analysis(flow_data):
       response = msg.content
       analysis = format_response(response, seedId)
  
-      # Check response, if ValidationError, the analysis the prediction will start again. Max 3 times.
+      # Check response, if ValidationError, the prediction will start again. Max 3 times.
       Analysis(**analysis)
       logger.info("Analysis successfull!")
       return analysis
